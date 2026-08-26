@@ -2,6 +2,19 @@
 
 ## Latest snapshot (2026-08-26)
 
+**Steam metadata enrichment is now usable:** My Games exposes **Find game details**, which batches the authenticated user's unmatched Steam AppIDs through IGDB, saves the returned metadata in `game_cache`, links resolved `UserGame` rows, shows an indeterminate progress state, and reports matched versus unmatched counts. Next automatically uses the enriched rows on its next request.
+
+**Files touched:**
+- `frontend/src/pages/MyGamesPage.*`, `frontend/src/api/userGames.ts`, `frontend/src/types/index.ts` — user-triggered enrichment action, lifecycle, and result reporting.
+
+**Verification:** `backend/mvnw.cmd test` green (77 tests). `frontend` production build green (`tsc -b && vite build`).
+
+**Next sensible step:** Deploy this frontend alongside the already committed enrichment backend, run Find game details from My Games, then revisit Next with the reported match count.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **Next v1 added:** Authenticated users can open `/next`, select a time-neutral session length and energy level, and receive three visual game picks with plainly stated reasons. The server evaluates the complete playable library, excludes Completed/Dropped, prioritizes unplayed and currently Playing games, then applies cached IGDB rating and HLTB commitment heuristics. The first picker intentionally does not claim genre, mood, or AI reasoning yet. Navigation now exposes Next as the primary signed-in experience.
 
 **IGDB descriptions introduced:** V14 adds `game_cache.igdb_summary`; the IGDB cache sync requests and stores `summary`, and Next displays it when a user-game cache match exists. The page retains a clear fallback for unavailable metadata.

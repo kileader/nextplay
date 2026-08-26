@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { SteamFamilyImportResult, UserGamePage, UserGameQuery, UserGameResult, UserGameStatus } from '../types';
+import type { SteamFamilyImportResult, SteamLibraryEnrichmentResult, UserGamePage, UserGameQuery, UserGameResult, UserGameStatus } from '../types';
 
 export function getUserGames(query: UserGameQuery, token: string, signal?: AbortSignal): Promise<UserGamePage> {
   const params = new URLSearchParams();
@@ -29,4 +29,8 @@ export function updateUserGameStatus(
   token: string,
 ): Promise<UserGameResult> {
   return api.patch<UserGameResult>(`/users/me/games/${steamAppId}/status`, { status }, token);
+}
+
+export function enrichSteamLibraryMetadata(token: string): Promise<SteamLibraryEnrichmentResult> {
+  return api.post<SteamLibraryEnrichmentResult>('/users/me/games/enrich-steam-metadata', {}, token);
 }

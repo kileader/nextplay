@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError } from '../api/client';
-import { getUserGames, importSteamFamilyLibrary, updateUserGameStatus } from '../api/userGames';
+import { enrichSteamLibraryMetadata, getUserGames, importSteamFamilyLibrary, updateUserGameStatus } from '../api/userGames';
 import { useAuth } from '../context/AuthContext';
-import type { SteamFamilyImportResult, UserGamePage, UserGameSort, UserGameStatus } from '../types';
+import type { SteamFamilyImportResult, SteamLibraryEnrichmentResult, UserGamePage, UserGameSort, UserGameStatus } from '../types';
 import './MyGamesPage.css';
 
 const PAGE_LIMIT = 50;
@@ -43,6 +43,8 @@ export default function MyGamesPage() {
   const [importPhase, setImportPhase] = useState<ImportPhase>(null);
   const [importElapsedSeconds, setImportElapsedSeconds] = useState(0);
   const [importResult, setImportResult] = useState<SteamFamilyImportResult | null>(null);
+  const [enrichmentActive, setEnrichmentActive] = useState(false);
+  const [enrichmentResult, setEnrichmentResult] = useState<SteamLibraryEnrichmentResult | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const [statusUpdateAppId, setStatusUpdateAppId] = useState<number | null>(null);
   const importControllerRef = useRef<AbortController | null>(null);
@@ -144,6 +146,23 @@ export default function MyGamesPage() {
     }
   }
 
+  async function handleMetadataEnrichment() {
+    if (!token) return;
+    setEnrichmentActive(true);
+    setError(null);
+    setEnrichmentResult(null);
+    try {
+      const result = await enrichSteamLibraryMetadata(token);
+      setEnrichmentResult(result);
+      resetForNewQuery();
+      setRefreshNonce(current => current + 1);
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : 'Failed to find game details.');
+    } finally {
+      setEnrichmentActive(false);
+    }
+  }
+
   if (!isLoggedIn) {
     return (
       <div className="my-games-page my-games-auth">
@@ -187,6 +206,28 @@ export default function MyGamesPage() {
         </form>
       </section>
 
+      {data && data.total > 0 && (
+        <section className="library-enrichment-band" aria-label="Game details">
+          <div>
+            <strong>Game details</strong>
+            <span>Find covers, descriptions, genres, and ratings for games missing cached metadata.</span>
+          </div>
+          <button type="button" onClick={() => void handleMetadataEnrichment()} disabled={importActive || enrichmentActive}>
+            {enrichmentActive ? 'Finding details...' : 'Find game details'}
+          </button>
+        </section>
+      )}
+
+      {enrichmentActive && (
+        <section className="library-import-progress" aria-live="polite" role="status">
+          <div>
+            <strong>Finding game details</strong>
+            <span>Matching your Steam library with IGDB. This can take a little while.</span>
+          </div>
+          <div className="library-progress-track" aria-hidden="true"><span /></div>
+        </section>
+      )}
+
       {importPhase && (
         <section className="library-import-progress" aria-live="polite" role="status">
           <div>
@@ -206,6 +247,12 @@ export default function MyGamesPage() {
           {importResult.cacheMatched > 0
             ? `${importResult.cacheMatched} matched to cached game metadata.`
             : 'No games matched to cached metadata yet.'}
+        </p>
+      )}
+
+      {enrichmentResult && (
+        <p className="import-result" role="status">
+          Found details for {enrichmentResult.matched} of {enrichmentResult.requested} games. {enrichmentResult.unmatched} still need a match.
         </p>
       )}
 

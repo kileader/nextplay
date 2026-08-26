@@ -37,6 +37,53 @@
   border-block: 1px solid var(--border);
 }
 
+.library-enrichment-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.library-enrichment-band > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.library-enrichment-band strong {
+  color: var(--text-h);
+  font-size: 14px;
+}
+
+.library-enrichment-band span {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.library-enrichment-band button {
+  flex: none;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+}
+
+.library-enrichment-band button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.library-enrichment-band button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .library-import-copy {
   display: flex;
   flex-direction: column;
@@ -378,6 +425,11 @@
   }
 
   .library-import-band {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .library-enrichment-band {
     align-items: flex-start;
     flex-direction: column;
   }

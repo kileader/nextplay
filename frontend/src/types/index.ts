@@ -197,6 +197,12 @@ export type SteamFamilyImportResult = {
   cacheAmbiguous: number;
 };
 
+export type SteamLibraryEnrichmentResult = {
+  requested: number;
+  matched: number;
+  unmatched: number;
+};
+
 // --- Next ---
 
 export type NextPlaySessionLength = 'SHORT' | 'STANDARD' | 'OPEN_ENDED';
