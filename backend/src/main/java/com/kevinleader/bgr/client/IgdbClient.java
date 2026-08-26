@@ -106,11 +106,13 @@ public class IgdbClient {
                 .header("Client-ID", clientId)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.TEXT_PLAIN)
-                .body("fields game; where category = 1 & uid = (" + ids + ");")
+                .body("fields category,game,uid; where uid = (" + ids + ");")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
         if (externalGames == null || externalGames.isEmpty()) return List.of();
-        String gameIds = externalGames.stream().map(IgdbExternalGameDto::game).filter(java.util.Objects::nonNull)
+        String gameIds = externalGames.stream()
+                .filter(externalGame -> externalGame.category() != null && externalGame.category() == STEAM_CATEGORY)
+                .map(IgdbExternalGameDto::game).filter(java.util.Objects::nonNull)
                 .map(String::valueOf).distinct().collect(java.util.stream.Collectors.joining(","));
         if (gameIds.isEmpty()) return List.of();
         List<IgdbGameDto> games = igdbRestClient.post()
