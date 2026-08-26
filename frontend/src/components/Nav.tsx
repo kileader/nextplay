@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useOnboarding } from '../context/OnboardingContext';
 import './Nav.css';
@@ -17,8 +17,8 @@ export default function Nav() {
     <nav className="site-nav" aria-label="Site navigation">
       <Link to="/" className="site-title">NextPlay</Link>
       <div className="nav-actions">
-        <Link to="/">Value Rankings</Link>
-        {isLoggedIn && <Link to="/my-games">My Games</Link>}
+        <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' nav-link-active' : ''}`}>Value Rankings</NavLink>
+        {isLoggedIn && <NavLink to="/my-games" className={({ isActive }) => `nav-link${isActive ? ' nav-link-active' : ''}`}>My Games</NavLink>}
         <button className="nav-setup" onClick={openModal}>My Setup</button>
         {isLoggedIn ? (
           <>

@@ -7,6 +7,7 @@ import type { SteamFamilyImportResult, UserGamePage, UserGameSort } from '../typ
 import './MyGamesPage.css';
 
 const PAGE_LIMIT = 50;
+const IMPORT_TIMEOUT_MS = 60_000;
 
 function formatPlaytime(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
@@ -85,14 +86,19 @@ export default function MyGamesPage() {
     setImporting(true);
     setError(null);
     setImportResult(null);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), IMPORT_TIMEOUT_MS);
     try {
-      const result = await importSteamFamilyLibrary(file, token);
+      const result = await importSteamFamilyLibrary(file, token, controller.signal);
       setImportResult(result);
       resetForNewQuery();
       setRefreshNonce(current => current + 1);
     } catch (error) {
-      setError(error instanceof ApiError ? error.message : 'Failed to import the Steam Family CSV.');
+      setError(controller.signal.aborted
+        ? 'The import timed out. Please try again; if it keeps happening, check the Railway deployment logs.'
+        : error instanceof ApiError ? error.message : 'Failed to import the Steam Family CSV.');
     } finally {
+      window.clearTimeout(timeout);
       setImporting(false);
     }
   }
@@ -109,6 +115,7 @@ export default function MyGamesPage() {
   const genreNames = new Map(data?.availableGenres.map(genre => [genre.id, genre.name]));
   const pageStart = data && data.total > 0 ? data.offset + 1 : 0;
   const pageEnd = data ? Math.min(data.offset + data.results.length, data.total) : 0;
+  const hasActiveFilters = title.trim().length > 0 || played !== 'all' || source !== '' || genreId !== '';
 
   return (
     <div className="my-games-page">
@@ -117,14 +124,22 @@ export default function MyGamesPage() {
           <h1>My Games</h1>
           <p>Playable games in your Steam library.</p>
         </div>
+      </div>
+
+      <section className="library-import-band" aria-label="Steam Family library import">
+        <div className="library-import-copy">
+          <strong>Steam Family library</strong>
+          <span>Import a new export or refresh an existing library.</span>
+        </div>
         <form className="library-import" onSubmit={handleImport}>
-          <label>
-            <span className="sr-only">Steam Family CSV</span>
-            <input type="file" accept=".csv,text/csv" onChange={event => setFile(event.target.files?.[0] ?? null)} />
+          <input id="steam-family-csv" className="library-file-input" type="file" accept=".csv,text/csv" onChange={event => setFile(event.target.files?.[0] ?? null)} />
+          <label className="library-file-button" htmlFor="steam-family-csv">
+            Choose CSV
           </label>
+          <span className="library-file-name">{file?.name ?? 'No file selected'}</span>
           <button type="submit" disabled={!file || importing}>{importing ? 'Importing...' : 'Import CSV'}</button>
         </form>
-      </div>
+      </section>
 
       {importResult && (
         <p className="import-result" role="status">
@@ -132,47 +147,52 @@ export default function MyGamesPage() {
         </p>
       )}
 
-      <section className="library-filters" aria-label="Library filters">
-        <label className="library-search">
-          <span>Search</span>
-          <input value={title} onChange={event => { setTitle(event.target.value); resetForNewQuery(); }} placeholder="Search titles" />
-        </label>
-        <label>
-          <span>Played</span>
-          <select value={played} onChange={event => { setPlayed(event.target.value); resetForNewQuery(); }}>
-            <option value="all">All games</option>
-            <option value="unplayed">Unplayed</option>
-            <option value="played">Played</option>
-          </select>
-        </label>
-        <label>
-          <span>Access</span>
-          <select value={source} onChange={event => { setSource(event.target.value); resetForNewQuery(); }}>
-            <option value="">All access</option>
-            <option value="own">Owned</option>
-            <option value="family">Family shared</option>
-          </select>
-        </label>
-        <label>
-          <span>Genre</span>
-          <select value={genreId} onChange={event => { setGenreId(event.target.value); resetForNewQuery(); }}>
-            <option value="">All genres</option>
-            {data?.availableGenres.map(genre => <option key={genre.id} value={genre.id}>{genre.name}</option>)}
-          </select>
-        </label>
-      </section>
+      {data && (data.total > 0 || hasActiveFilters) && (
+        <section className="library-filters" aria-label="Library filters">
+          <label className="library-search">
+            <span>Search</span>
+            <input value={title} onChange={event => { setTitle(event.target.value); resetForNewQuery(); }} placeholder="Search titles" />
+          </label>
+          <label>
+            <span>Played</span>
+            <select value={played} onChange={event => { setPlayed(event.target.value); resetForNewQuery(); }}>
+              <option value="all">All games</option>
+              <option value="unplayed">Unplayed</option>
+              <option value="played">Played</option>
+            </select>
+          </label>
+          <label>
+            <span>Access</span>
+            <select value={source} onChange={event => { setSource(event.target.value); resetForNewQuery(); }}>
+              <option value="">All access</option>
+              <option value="own">Owned</option>
+              <option value="family">Family shared</option>
+            </select>
+          </label>
+          <label>
+            <span>Genre</span>
+            <select value={genreId} onChange={event => { setGenreId(event.target.value); resetForNewQuery(); }}>
+              <option value="">All genres</option>
+              {data.availableGenres.map(genre => <option key={genre.id} value={genre.id}>{genre.name}</option>)}
+            </select>
+          </label>
+        </section>
+      )}
 
       {error && <p className="library-status error" role="alert">{error}</p>}
       {loading && <p className="library-status">Loading library...</p>}
 
       {!loading && data && (
         <>
-          <div className="library-toolbar">
+          {data.total > 0 && <div className="library-toolbar">
             <p>{data.total} playable games</p>
-            {data.total > 0 && <p>{pageStart}-{pageEnd} shown</p>}
-          </div>
+            <p>{pageStart}-{pageEnd} shown</p>
+          </div>}
           {data.total === 0 ? (
-            <p className="library-empty">No playable games match these filters.</p>
+            <section className="library-empty" aria-live="polite">
+              <h2>{hasActiveFilters ? 'No games match these filters.' : 'Your playable library is ready for an import.'}</h2>
+              <p>{hasActiveFilters ? 'Try clearing a filter or searching for a different title.' : 'Choose your Steam Family CSV above to add the games you can play.'}</p>
+            </section>
           ) : (
             <div className="library-table-wrap">
               <table className="library-table">

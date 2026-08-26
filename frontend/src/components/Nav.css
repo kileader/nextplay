@@ -44,6 +44,16 @@
   }
 }
 
+.nav-link {
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link-active {
+  color: var(--text-h) !important;
+  border-bottom-color: var(--accent);
+}
+
 .nav-signup {
   padding: 5px 12px;
   background: var(--accent);

@@ -73,7 +73,8 @@ export const api = {
   get: <T>(path: string, options?: { token?: string; signal?: AbortSignal }) =>
     request<T>(path, { token: options?.token, signal: options?.signal }),
   post: <T>(path: string, body: unknown, token?: string) => request<T>(path, { method: 'POST', body, token }),
-  postForm: <T>(path: string, body: FormData, token?: string) => request<T>(path, { method: 'POST', body, token }),
+  postForm: <T>(path: string, body: FormData, token?: string, signal?: AbortSignal) =>
+    request<T>(path, { method: 'POST', body, token, signal }),
   put: <T>(path: string, body: unknown, token?: string) => request<T>(path, { method: 'PUT', body, token }),
   patch: <T>(path: string, body: unknown, token?: string) => request<T>(path, { method: 'PATCH', body, token }),
   delete: <T>(path: string, token?: string) => request<T>(path, { method: 'DELETE', token }),

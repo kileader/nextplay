@@ -2,6 +2,22 @@
 
 ## Latest snapshot (2026-08-26)
 
+**My Games first-import UI refined:** The page now gives Steam Family CSV import its own full-width action band, with a styled file chooser and clear selected-file state. Before an import, it shows an honest empty-library prompt instead of filters plus a misleading “no games match” result. Filters stay visible once games exist or when they are actively narrowing a result set. Navigation now marks the current My Games or Value Rankings location.
+
+**Local follow-up fixes (not deployed until next push):** `frontend/vercel.json` now rewrites direct routes to `index.html`, so refreshes on `/signup` and `/my-games` do not receive a Vercel 404. CSV imports now abort after 60 seconds and return an actionable timeout message rather than leaving the control indefinitely in an importing state. Railway’s production CORS preflight for `https://mynextplay.vercel.app` was verified as successful after the variable correction.
+
+**Files touched:**
+- `frontend/src/pages/MyGamesPage.tsx`, `MyGamesPage.css`, `frontend/src/api/client.ts`, `frontend/src/api/userGames.ts`, `frontend/vercel.json` — import band, selected file state, conditional filters, first-import empty state, bounded import request, and Vercel SPA routing.
+- `frontend/src/components/Nav.tsx`, `Nav.css` — active navigation state.
+
+**Verification:** `frontend` production build green (`tsc -b && vite build`).
+
+**Next sensible step:** Push and deploy this visual cleanup, finish the Railway CORS correction, then import `local-data/library.csv` through My Games.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **My Games browse vertical slice complete:** Authenticated users can use `GET /users/me/games` to browse their playable Steam Family library and can open `/my-games` to import a CSV and browse a dense, paginated table. The view supports title search, played/unplayed, owned/family-shared, and matched-genre filters, plus title/playtime/last-played sorting. Library rows always retain Steam title/source/playtime; optional `GameCache` matches add cover, IGDB rating, and genre metadata.
 
 **Files touched:**

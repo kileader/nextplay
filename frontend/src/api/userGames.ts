@@ -15,8 +15,8 @@ export function getUserGames(query: UserGameQuery, token: string, signal?: Abort
   return api.get<UserGamePage>(`/users/me/games?${params.toString()}`, { token, signal });
 }
 
-export function importSteamFamilyLibrary(file: File, token: string): Promise<SteamFamilyImportResult> {
+export function importSteamFamilyLibrary(file: File, token: string, signal?: AbortSignal): Promise<SteamFamilyImportResult> {
   const body = new FormData();
   body.append('file', file);
-  return api.postForm<SteamFamilyImportResult>('/users/me/games/import/steam-family', body, token);
+  return api.postForm<SteamFamilyImportResult>('/users/me/games/import/steam-family', body, token, signal);
 }
