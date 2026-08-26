@@ -15,6 +15,8 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class IgdbSyncService {
@@ -73,16 +75,20 @@ public class IgdbSyncService {
     }
 
     /** Fetches and caches a bounded Steam-library subset, bypassing the catalog rating threshold. */
-    public List<GameCache> syncSteamLibraryGames(Collection<Integer> steamAppIds) {
-        List<IgdbGameDto> games = igdbClient.fetchGamesBySteamAppIds(steamAppIds);
-        List<GameCache> toSave = new ArrayList<>(games.size());
-        for (IgdbGameDto dto : games) {
+    public Map<Integer, GameCache> syncSteamLibraryGames(Collection<Integer> steamAppIds) {
+        List<IgdbClient.SteamGameMatch> matches = igdbClient.fetchGamesBySteamAppIds(steamAppIds);
+        Map<Long, GameCache> cacheByIgdbId = new HashMap<>();
+        Map<Integer, GameCache> cacheBySteamAppId = new HashMap<>();
+        for (IgdbClient.SteamGameMatch match : matches) {
+            IgdbGameDto dto = match.game();
             if (dto.id() == null) continue;
-            GameCache entity = gameCacheRepository.findById(dto.id()).orElseGet(GameCache::new);
+            GameCache entity = cacheByIgdbId.computeIfAbsent(dto.id(), id -> gameCacheRepository.findById(id).orElseGet(GameCache::new));
             applyIgdbFields(entity, dto);
-            toSave.add(entity);
+            entity.setSteamAppId(match.steamAppId());
+            cacheBySteamAppId.put(match.steamAppId(), entity);
         }
-        return gameCacheRepository.saveAll(toSave);
+        gameCacheRepository.saveAll(cacheByIgdbId.values());
+        return cacheBySteamAppId;
     }
 
     private void applyIgdbFields(GameCache entity, IgdbGameDto dto) {

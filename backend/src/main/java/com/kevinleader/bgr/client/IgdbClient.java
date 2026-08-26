@@ -96,7 +96,7 @@ public class IgdbClient {
     }
 
     /** Resolves a bounded set of Steam AppIDs without the broad catalog rating filter. */
-    public List<IgdbGameDto> fetchGamesBySteamAppIds(Collection<Integer> steamAppIds) {
+    public List<SteamGameMatch> fetchGamesBySteamAppIds(Collection<Integer> steamAppIds) {
         if (steamAppIds == null || steamAppIds.isEmpty()) return List.of();
         String token = getAccessToken();
         String ids = steamAppIds.stream().map(String::valueOf).map(id -> "\"" + id + "\"")
@@ -110,9 +110,11 @@ public class IgdbClient {
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
         if (externalGames == null || externalGames.isEmpty()) return List.of();
-        String gameIds = externalGames.stream()
+        List<IgdbExternalGameDto> steamExternalGames = externalGames.stream()
                 .filter(externalGame -> externalGame.category() != null && externalGame.category() == STEAM_CATEGORY)
-                .map(IgdbExternalGameDto::game).filter(java.util.Objects::nonNull)
+                .filter(externalGame -> externalGame.game() != null)
+                .toList();
+        String gameIds = steamExternalGames.stream().map(IgdbExternalGameDto::game)
                 .map(String::valueOf).distinct().collect(java.util.stream.Collectors.joining(","));
         if (gameIds.isEmpty()) return List.of();
         List<IgdbGameDto> games = igdbRestClient.post()
@@ -123,7 +125,26 @@ public class IgdbClient {
                 .body(FIELDS + "; where id = (" + gameIds + ");")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
-        return games == null ? List.of() : games;
+        if (games == null || games.isEmpty()) return List.of();
+        java.util.Map<Long, IgdbGameDto> gamesById = games.stream()
+                .filter(game -> game.id() != null)
+                .collect(java.util.stream.Collectors.toMap(IgdbGameDto::id, game -> game, (left, right) -> left));
+        return steamExternalGames.stream()
+                .map(externalGame -> toSteamGameMatch(externalGame, gamesById.get(externalGame.game())))
+                .filter(java.util.Objects::nonNull)
+                .toList();
+    }
+
+    private SteamGameMatch toSteamGameMatch(IgdbExternalGameDto externalGame, IgdbGameDto game) {
+        if (game == null) return null;
+        try {
+            return new SteamGameMatch(Integer.parseInt(externalGame.uid()), game);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
+
+    public record SteamGameMatch(int steamAppId, IgdbGameDto game) {
     }
 
     public static String buildCoverUrl(String imageId) {

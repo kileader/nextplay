@@ -32,8 +32,7 @@ public class SteamLibraryMetadataEnrichmentService {
             List<UserGame> batch = unmatched.subList(start, Math.min(start + BATCH_SIZE, unmatched.size()));
             Map<Integer, GameCache> cacheByAppId = igdbSyncService.syncSteamLibraryGames(
                     batch.stream().map(UserGame::getSteamAppId).toList()
-            ).stream().filter(cache -> cache.getSteamAppId() != null)
-                    .collect(Collectors.toMap(GameCache::getSteamAppId, cache -> cache, (left, right) -> left));
+            );
             for (UserGame game : batch) {
                 GameCache cache = cacheByAppId.get(game.getSteamAppId());
                 if (cache != null) {
