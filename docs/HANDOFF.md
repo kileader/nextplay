@@ -6,9 +6,12 @@
 
 **Persistence follow-up:** Newly fetched `GameCache` rows are now flushed and the managed instances returned by JPA are linked to `UserGame`. This fixes the production `TransientPropertyValueException` raised when enrichment tried to save a user-game relationship to a newly created cache row.
 
+**Coverage follow-up:** The enrichment's bounded AppID queries now request up to 500 records. IGDB's default response limit was 10, which produced exactly 120 resolved rows from 12 import batches rather than returning every match in each batch.
+
 **Files touched:**
 - `backend/src/main/java/com/kevinleader/bgr/client/IgdbClient.java`, `dto/igdb/IgdbGameDto.java` — remove the unsupported field and DTO member.
 - `backend/src/main/java/com/kevinleader/bgr/service/IgdbSyncService.java` — flush cache rows and return managed instances for user-game linking.
+- `backend/src/main/java/com/kevinleader/bgr/client/IgdbClient.java` — request complete bounded enrichment result sets.
 - `backend/src/test/java/com/kevinleader/bgr/client/IgdbClientResolveSteamTest.java` — align Steam-ID resolution coverage.
 - `backend/src/test/java/com/kevinleader/bgr/service/IgdbSyncServiceTest.java` — cover linking a newly persisted cache row.
 - `docs/DECISIONS.md`, `docs/HANDOFF.md` — record the supported IGDB mapping approach.

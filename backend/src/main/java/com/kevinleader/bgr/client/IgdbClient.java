@@ -109,7 +109,7 @@ public class IgdbClient {
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.TEXT_PLAIN)
                 .body("fields external_game_source,game,uid; where external_game_source = " + steamSourceId
-                        + " & uid = (" + ids + ");")
+                        + " & uid = (" + ids + "); limit 500;")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
         if (externalGames == null || externalGames.isEmpty()) return List.of();
@@ -124,7 +124,7 @@ public class IgdbClient {
                 .header("Client-ID", clientId)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.TEXT_PLAIN)
-                .body(FIELDS + "; where id = (" + gameIds + ");")
+                .body(FIELDS + "; where id = (" + gameIds + "); limit 500;")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
         if (games == null || games.isEmpty()) return List.of();
