@@ -15,8 +15,10 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
+import java.util.function.Function;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class IgdbSyncService {
@@ -87,8 +89,11 @@ public class IgdbSyncService {
             entity.setSteamAppId(match.steamAppId());
             cacheBySteamAppId.put(match.steamAppId(), entity);
         }
-        gameCacheRepository.saveAll(cacheByIgdbId.values());
-        return cacheBySteamAppId;
+        Map<Long, GameCache> savedByIgdbId = gameCacheRepository.saveAllAndFlush(cacheByIgdbId.values()).stream()
+                .collect(Collectors.toMap(GameCache::getIgdbGameId, Function.identity()));
+        return cacheBySteamAppId.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry ->
+                        savedByIgdbId.get(entry.getValue().getIgdbGameId())));
     }
 
     private void applyIgdbFields(GameCache entity, IgdbGameDto dto) {

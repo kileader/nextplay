@@ -4,12 +4,16 @@
 
 **IGDB enrichment production fix:** IGDB rejects the obsolete `external.steam` game field, which caused `Find game details` to fail with HTTP 400 before any cache rows could be saved. The shared game query now relies on `external_games`; targeted enrichment continues to resolve through `external_game_sources` and keeps the requested Steam AppID explicitly.
 
+**Persistence follow-up:** Newly fetched `GameCache` rows are now flushed and the managed instances returned by JPA are linked to `UserGame`. This fixes the production `TransientPropertyValueException` raised when enrichment tried to save a user-game relationship to a newly created cache row.
+
 **Files touched:**
 - `backend/src/main/java/com/kevinleader/bgr/client/IgdbClient.java`, `dto/igdb/IgdbGameDto.java` — remove the unsupported field and DTO member.
+- `backend/src/main/java/com/kevinleader/bgr/service/IgdbSyncService.java` — flush cache rows and return managed instances for user-game linking.
 - `backend/src/test/java/com/kevinleader/bgr/client/IgdbClientResolveSteamTest.java` — align Steam-ID resolution coverage.
+- `backend/src/test/java/com/kevinleader/bgr/service/IgdbSyncServiceTest.java` — cover linking a newly persisted cache row.
 - `docs/DECISIONS.md`, `docs/HANDOFF.md` — record the supported IGDB mapping approach.
 
-**Verification:** `backend/mvnw.cmd test` green (75 tests).
+**Verification:** `backend/mvnw.cmd test` green (76 tests), including the managed-cache linking regression test.
 
 **Next sensible step:** Deploy the backend, run **Find game details** once, and use the reported match count to determine any remaining coverage issue.
 
