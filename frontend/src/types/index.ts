@@ -142,3 +142,52 @@ export type RankingConfigRequest = {
   priceWeight?: number;
   excludeAdultRated?: boolean;
 };
+
+// --- My Games ---
+
+export type UserGameSort = 'TITLE' | 'PLAYTIME' | 'LAST_PLAYED';
+
+export type UserGameResult = {
+  id: number | null;
+  steamAppId: number;
+  title: string;
+  source: string;
+  playable: boolean;
+  excludeReason: string | null;
+  playtimeMinutes: number;
+  acquiredAt: string | null;
+  lastPlayedAt: string | null;
+  igdbGameId: number | null;
+  coverImageUrl: string | null;
+  igdbRating: number | null;
+  genreIds: number[];
+};
+
+export type UserGamePage = {
+  offset: number;
+  limit: number;
+  total: number;
+  results: UserGameResult[];
+  availableGenres: MetadataItem[];
+};
+
+export type UserGameQuery = {
+  playable?: boolean;
+  played?: boolean;
+  source?: string;
+  genreIds?: number[];
+  title?: string;
+  sort?: UserGameSort;
+  sortDirection?: SortDirection;
+  offset?: number;
+  limit?: number;
+};
+
+export type SteamFamilyImportResult = {
+  totalRows: number;
+  created: number;
+  updated: number;
+  cacheMatched: number;
+  cacheUnmatched: number;
+  cacheAmbiguous: number;
+};

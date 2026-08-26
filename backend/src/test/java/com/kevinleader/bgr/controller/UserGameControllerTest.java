@@ -1,9 +1,11 @@
 package com.kevinleader.bgr.controller;
 
 import com.kevinleader.bgr.dto.usergame.SteamFamilyImportResultDto;
+import com.kevinleader.bgr.dto.usergame.UserGamePageDto;
 import com.kevinleader.bgr.entity.AppUser;
 import com.kevinleader.bgr.security.AppUserPrincipal;
 import com.kevinleader.bgr.service.SteamFamilyLibraryImportService;
+import com.kevinleader.bgr.service.UserGameService;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -19,7 +21,7 @@ class UserGameControllerTest {
     @Test
     void importsCsvForAuthenticatedUser() {
         SteamFamilyLibraryImportService service = mock(SteamFamilyLibraryImportService.class);
-        UserGameController controller = new UserGameController(service);
+        UserGameController controller = new UserGameController(service, mock(UserGameService.class));
         AppUser user = new AppUser();
         user.setUsername("kevin");
         AppUserPrincipal principal = new AppUserPrincipal(user);

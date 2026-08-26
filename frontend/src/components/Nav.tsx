@@ -17,6 +17,8 @@ export default function Nav() {
     <nav className="site-nav" aria-label="Site navigation">
       <Link to="/" className="site-title">NextPlay</Link>
       <div className="nav-actions">
+        <Link to="/">Value Rankings</Link>
+        {isLoggedIn && <Link to="/my-games">My Games</Link>}
         <button className="nav-setup" onClick={openModal}>My Setup</button>
         {isLoggedIn ? (
           <>

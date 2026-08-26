@@ -9,6 +9,7 @@ import App from './App.tsx'
 import RankingsPage from './pages/RankingsPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import SignupPage from './pages/SignupPage.tsx'
+import MyGamesPage from './pages/MyGamesPage.tsx'
 import './index.css'
 
 const rootEl = document.getElementById('root');
@@ -25,6 +26,7 @@ createRoot(rootEl).render(
                 <Route index element={<RankingsPage />} />
                 <Route path="login" element={<LoginPage />} />
                 <Route path="signup" element={<SignupPage />} />
+                <Route path="my-games" element={<MyGamesPage />} />
               </Route>
             </Routes>
           </BrowserRouter>

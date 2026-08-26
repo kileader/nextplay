@@ -38,8 +38,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const { method = 'GET', body, token, signal } = options;
 
   const headers: Record<string, string> = {};
+  const isFormData = body instanceof FormData;
 
-  if (body !== undefined) {
+  if (body !== undefined && !isFormData) {
     headers['Content-Type'] = 'application/json';
   }
 
@@ -50,7 +51,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const response = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
     signal,
   });
 
@@ -72,6 +73,7 @@ export const api = {
   get: <T>(path: string, options?: { token?: string; signal?: AbortSignal }) =>
     request<T>(path, { token: options?.token, signal: options?.signal }),
   post: <T>(path: string, body: unknown, token?: string) => request<T>(path, { method: 'POST', body, token }),
+  postForm: <T>(path: string, body: FormData, token?: string) => request<T>(path, { method: 'POST', body, token }),
   put: <T>(path: string, body: unknown, token?: string) => request<T>(path, { method: 'PUT', body, token }),
   patch: <T>(path: string, body: unknown, token?: string) => request<T>(path, { method: 'PATCH', body, token }),
   delete: <T>(path: string, token?: string) => request<T>(path, { method: 'DELETE', token }),

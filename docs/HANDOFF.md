@@ -2,6 +2,24 @@
 
 ## Latest snapshot (2026-08-26)
 
+**My Games browse vertical slice complete:** Authenticated users can use `GET /users/me/games` to browse their playable Steam Family library and can open `/my-games` to import a CSV and browse a dense, paginated table. The view supports title search, played/unplayed, owned/family-shared, and matched-genre filters, plus title/playtime/last-played sorting. Library rows always retain Steam title/source/playtime; optional `GameCache` matches add cover, IGDB rating, and genre metadata.
+
+**Files touched:**
+- `backend/src/main/java/com/kevinleader/bgr/dto/usergame/`, `UserGameService.java`, `UserGameController.java`, `UserGameRepository.java` — paginated browse contract, filtering/sorting, and a fetch-joined cache relation for the existing `user_game` data.
+- `backend/src/test/java/com/kevinleader/bgr/service/UserGameServiceTest.java`, `UserGameControllerTest.java` — browse filtering, metadata enrichment, pagination, and updated controller construction coverage.
+- `frontend/src/pages/MyGamesPage.*`, `frontend/src/api/userGames.ts`, `frontend/src/api/client.ts`, `frontend/src/types/index.ts`, `frontend/src/main.tsx`, `frontend/src/components/Nav.tsx` — `/my-games` route, authenticated CSV import, library table, and navigation to both My Games and Value Rankings.
+- `docs/DECISIONS.md`, `docs/NEXT_STEPS.md`, `docs/HANDOFF.md` — browse behavior decision and revised priority list.
+
+**Verification:** `backend/mvnw.cmd test` green (72 tests). `frontend` production build green (`tsc -b && vite build`). `frontend` lint still fails on pre-existing React 19 rule violations in `MultiSelect.tsx`, `OnboardingModal.tsx`, `SavedConfigs.tsx`, `AuthContext.tsx`, `OnboardingContext.tsx`, and `RankingsPage.tsx`; the new My Games page has no remaining lint finding.
+
+**Open risks / blockers:** No production migration was added, and the real CSV has not yet been imported through the deployed UI. The browse query operates in memory over one user's roughly 1,000-row library after a fetch join; appropriate for this first personal-library slice, but revisit database-side filtering if libraries grow materially.
+
+**Next sensible step:** Deploy, import `local-data/library.csv` while authenticated, and use My Games with the actual library before designing user-managed statuses.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **NextPlay rename complete:** The product is now branded **NextPlay**. The existing public ranking experience is labeled **Value Rankings** and remains intact. The first-stage rename updates user-facing branding, frontend metadata/assets, Maven and Spring application identity, and current product documentation without changing routes, database schema/history, Java packages, or browser-storage keys.
 
 **Files touched:**

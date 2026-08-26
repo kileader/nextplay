@@ -8,6 +8,7 @@
 - **Imported status:** Do **not** add a durable wishlist/backlog/playing/completed/dropped status in the first migration. A Steam Family CSV row means "in this user's Steam-family library"; explicit statuses should be added later with UI semantics rather than defaulting every imported playable game to backlog.
 - **Steam import metadata:** Persist Steam AppID and the exporter facts that cannot be derived (title, source, playability, exclusion reason, playtime, and dates). Derive the store URL from the AppID instead of storing a duplicate value. Link `UserGame` to `GameCache` only when the Steam AppID match is unambiguous; preserve the Steam row without cache metadata otherwise.
 - **Steam import behavior:** A CSV import validates the whole file before saving, then creates or updates rows by `(user_id, steam_app_id)`. It does not remove existing rows absent from a later export; snapshot reconciliation is deferred until the library has user-managed statuses and a clear confirmation flow.
+- **My Games browse behavior:** The playable library view reads `UserGame` as the source of truth for title, access source, playtime, and playability. Matched `GameCache` data is optional enrichment for covers, ratings, and genres; an unmatched Steam row remains browseable and filterable by its Steam facts. Keep this first browse slice migration-free and defer explicit personal statuses.
 
 ## 2026-04-19
 
