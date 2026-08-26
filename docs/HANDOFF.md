@@ -1,5 +1,28 @@
 # Handoff
 
+## Latest snapshot (2026-08-26)
+
+**Steam Family CSV import backend complete:** Authenticated users can now upload an export to `POST /users/me/games/import/steam-family` using multipart field `file`. The importer validates the complete file before saving, upserts by `(user_id, steam_app_id)`, preserves Steam facts, and links `game_cache` metadata only for unambiguous AppID matches. It does not delete rows missing from a later export.
+
+**Files touched:**
+- `AGENTS.md`, `docs/PHI_AND_CID.md`, `docs/DECISIONS.md` — updated Cid wording so it is implementation-agent/tool-independent, not Cursor-specific; recorded import decisions.
+- `backend/src/main/resources/db/migration/V12__create_user_game.sql` — creates `user_game` with user association, optional `game_cache` match, Steam AppID/title/source/playability/playtime/date fields, uniqueness on `(user_id, steam_app_id)`, a foreign-key index, and an index for cache matching by Steam AppID.
+- `backend/src/main/java/com/kevinleader/bgr/entity/UserGame.java` — JPA entity for imported user library rows.
+- `backend/src/main/java/com/kevinleader/bgr/repository/UserGameRepository.java`, `GameCacheRepository.java` — import lookup methods.
+- `backend/src/main/java/com/kevinleader/bgr/service/SteamFamilyLibraryImportService.java` — CSV parsing, validation, matching, and upsert logic.
+- `backend/src/main/java/com/kevinleader/bgr/controller/UserGameController.java` — authenticated multipart import endpoint.
+- `backend/src/main/java/com/kevinleader/bgr/dto/usergame/SteamFamilyImportResultDto.java` — import counts returned to the client.
+- `backend/src/test/java/com/kevinleader/bgr/service/SteamFamilyLibraryImportServiceTest.java`, `UserGameControllerTest.java` — parser/match/upsert and controller delegation coverage.
+- `backend/pom.xml` — Apache Commons CSV parser dependency.
+
+**Verification:** `backend/mvnw.cmd test` green (70 tests). Existing tests do not start PostgreSQL/Flyway, so V12 is compile-reviewed but not migration-tested against a database.
+
+**Open risks / blockers:** No My Games browse endpoint or UI yet. No status field yet; this avoids prematurely labeling imported library games as backlog/completed/dropped before the app has status-management UI. Cache metadata coverage depends on the existing rating-filtered IGDB cache, so unmatched Steam records intentionally fall back to their Steam title.
+
+**Next sensible step:** Add paginated `GET /users/me/games` with playable/played/source/title filters and title/playtime sorting, then build the My Games page and upload control.
+
+---
+
 ## Latest snapshot (2026-04-19)
 
 **Admin API:** Full reference and **when to use each sync endpoint** — `docs/ADMIN_API.md`. Partial sync: `POST /admin/sync/cheapshark`, `/admin/sync/hltb`, `/admin/sync/igdb`, `/admin/sync/price-estimation`; full pipeline `POST /admin/sync`; HLTB reset+full `POST /admin/hltb-resync`. All share the cache lock (**409** if busy).

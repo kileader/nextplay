@@ -13,3 +13,6 @@
 
 # Build output
 target/
+
+# Local files
+/local-data/

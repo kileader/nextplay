@@ -1,12 +1,19 @@
 # Decisions
 
+## 2026-08-26
+
+- **My Games persistence:** Start the personal library foundation with a new **`user_game` / `UserGame`** model instead of evolving `wishlist_entry` immediately. `WishlistEntry` is narrow and not yet wired to REST/UI; leaving it untouched keeps the first Steam Family import slice non-destructive. Imported rows store per-user Steam relationship facts and optionally link to `game_cache` by matched `steam_app_id`.
+- **Imported status:** Do **not** add a durable wishlist/backlog/playing/completed/dropped status in the first migration. A Steam Family CSV row means "in this user's Steam-family library"; explicit statuses should be added later with UI semantics rather than defaulting every imported playable game to backlog.
+- **Steam import metadata:** Persist Steam AppID and the exporter facts that cannot be derived (title, source, playability, exclusion reason, playtime, and dates). Derive the store URL from the AppID instead of storing a duplicate value. Link `UserGame` to `GameCache` only when the Steam AppID match is unambiguous; preserve the Steam row without cache metadata otherwise.
+- **Steam import behavior:** A CSV import validates the whole file before saving, then creates or updates rows by `(user_id, steam_app_id)`. It does not remove existing rows absent from a later export; snapshot reconciliation is deferred until the library has user-managed statuses and a clear confirmation flow.
+
 ## 2026-04-19
 
 - **Ranking price assembly:** `GameCache.getEffectivePriceCents()` **prefers `cheapshark_price_cents` when set**, else tier estimate. (Earlier **`min(cs, est)`** incorrectly made the **$14.99 PC tier** beat higher Steam deal prices.) **`priceIsTrackedDeal`** and **`cheapshark_deal_url`** apply when the **displayed** cent value equals the CheapShark column. Nominal **free** substitute when `includeFreeToPlay` uses **$1.00** and is **not** flagged as a tracked deal.
 - **Tier estimation:** `PriceEstimationService` unions IGDB **`platform_ids`** with **Windows (6)** whenever **`steam_app_id`** is present (Steam catalog ⇒ PC tier participates in the **lowest-tier pick** across platforms), including when IGDB omits PC from platforms. If **`platform_ids` is empty** but **`steam_app_id`** is set, only the PC tier is used (~$14.99 baseline). (Not the same as the old **`min(cheapshark, estimate)`** effective price.)
 - **IGDB Steam id:** Sync requests **`external.steam`** and **`IgdbClient.resolveSteamAppId`** prefers that, then falls back to the **first** Steam row in **`external_games`** (`category` 1, parse `uid`). IGDB’s **`external`** map is the documented first-class Steam link; relying on **`external_games`** alone matched almost nothing. Numeric min/max across multiple Steam `uid`s was rejected — use first matching row after filter.
 - **Admin partial cache sync:** `POST /admin/sync` runs the full nightly pipeline (IGDB → price estimation → CheapShark → HLTB). **`POST /admin/sync/igdb`**, **`/sync/price-estimation`**, **`/sync/cheapshark`**, **`/sync/hltb`** run a single phase each; all use the same **`CacheRefreshJob` lock** (409 if another job is in progress). **`POST /admin/hltb-resync`** (clear HLTB timestamps + full HLTB pass) also takes that lock. **When to use each** + full **`/admin`** route list: **`docs/ADMIN_API.md`**.
-- **Phi vs Cid:** **Phi** = native ChatGPT (continuity/orientation; compass). **Cid** = Cursor coding agent (implementation; scaffold). **`docs/PHI_AND_CID.md`**. **`docs/PHI_PROJECT_INSTRUCTIONS.md`** is BGR context **for Phi in ChatGPT**, not an in-repo agent.
+- **Phi vs Cid:** **Phi** = native ChatGPT (continuity/orientation; compass). **Cid** = implementation agent (tool/IDE-independent; scaffold). **`docs/PHI_AND_CID.md`**. **`docs/PHI_PROJECT_INSTRUCTIONS.md`** is BGR context **for Phi in ChatGPT**, not an in-repo agent.
 
 ## 2026-04-18
 

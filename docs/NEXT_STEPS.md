@@ -1,10 +1,11 @@
 # Next Steps
 
-## Start here (2026-04-18)
+## Start here (2026-08-26)
 
-1. **Wishlist Watchtower (v1)** — `wishlist_entry` + `WishlistEntry` exist; add backend API, wire auth, minimal frontend (list + add/remove from rankings). Price alerts / CheapShark alerts = later slice.
-2. **Game detail page** (`/game/:id`) — pairs with wishlist; Leaf feedback. Can trail v1 wishlist or follow immediately after.
-3. **US pricing trust** — core CheapShark sync bug fixed (2026-04-19; was deserializing array as single object). After deploying, `POST /admin/sync` to populate real prices. Remaining: `steam_app_id` coverage gaps, store name on tooltip, Steam list price research.
+1. **My Games browse API** — Steam Family CSV import backend is complete. Add authenticated `GET /users/me/games` with pagination, playable/played/source/title/genre filters, and title/playtime sorting.
+2. **My Games frontend** — `/my-games` route, upload/import control, and dense table/list for 1,000+ playable games.
+3. **Wishlist Watchtower (v1)** — `wishlist_entry` + `WishlistEntry` exist but remain unwired; revisit after My Games foundation so wishlist can potentially become a `UserGame` status.
+4. **Game detail page** (`/game/:id`) — pairs with personal library/wishlist.
 
 ## Active queue (maintenance)
 

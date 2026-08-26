@@ -9,11 +9,14 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Collection;
 
 @Repository
 public interface GameCacheRepository extends JpaRepository<GameCache, Long> {
 
     List<GameCache> findBySteamAppIdIsNotNull();
+
+    List<GameCache> findBySteamAppIdIn(Collection<Integer> steamAppIds);
 
     @Query("SELECT g FROM GameCache g WHERE g.lastHltbSync IS NULL")
     List<GameCache> findAllNeedingHltbSync();

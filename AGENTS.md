@@ -2,7 +2,7 @@
 
 This repo supports handoffs between multiple coding agents.
 
-**Personas:** Kevin uses **Phi** (native ChatGPT) for continuity/orientation and **Cid** (this Cursor agent) for implementation — see **`docs/PHI_AND_CID.md`**. Coding agents here act as **Cid** (scaffold), not Phi (compass).
+**Personas:** Kevin uses **Phi** (native ChatGPT) for continuity/orientation and **Cid** (implementation agent; tool/IDE-independent) for implementation — see **`docs/PHI_AND_CID.md`**. Coding agents here act as **Cid** (scaffold), not Phi (compass).
 
 ## Read First
 

@@ -14,7 +14,7 @@ She helps think clearly, process confusion, reality-check, shape language, and k
 
 ---
 
-## Cid (Cursor / coding agent)
+## Cid (implementation agent)
 
 **Cid is the build-side partner:** practical, operator-minded, implementation-focused, turning rough intent into real progress in the codebase.
 
