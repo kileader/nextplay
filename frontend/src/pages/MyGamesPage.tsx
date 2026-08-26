@@ -116,6 +116,9 @@ export default function MyGamesPage() {
   const pageStart = data && data.total > 0 ? data.offset + 1 : 0;
   const pageEnd = data ? Math.min(data.offset + data.results.length, data.total) : 0;
   const hasActiveFilters = title.trim().length > 0 || played !== 'all' || source !== '' || genreId !== '';
+  const showCovers = data?.results.some(game => game.coverImageUrl !== null) ?? false;
+  const showGenres = data?.results.some(game => game.genreIds.length > 0) ?? false;
+  const showRatings = data?.results.some(game => game.igdbRating !== null) ?? false;
 
   return (
     <div className="my-games-page">
@@ -143,7 +146,10 @@ export default function MyGamesPage() {
 
       {importResult && (
         <p className="import-result" role="status">
-          Imported {importResult.totalRows} games: {importResult.created} new, {importResult.updated} updated.
+          Imported {importResult.totalRows} games: {importResult.created} new, {importResult.updated} updated.{' '}
+          {importResult.cacheMatched > 0
+            ? `${importResult.cacheMatched} matched to cached game metadata.`
+            : 'No games matched to cached metadata yet.'}
         </p>
       )}
 
@@ -169,13 +175,13 @@ export default function MyGamesPage() {
               <option value="family">Family shared</option>
             </select>
           </label>
-          <label>
+          {data.availableGenres.length > 0 && <label>
             <span>Genre</span>
             <select value={genreId} onChange={event => { setGenreId(event.target.value); resetForNewQuery(); }}>
               <option value="">All genres</option>
               {data.availableGenres.map(genre => <option key={genre.id} value={genre.id}>{genre.name}</option>)}
             </select>
-          </label>
+          </label>}
         </section>
       )}
 
@@ -198,27 +204,27 @@ export default function MyGamesPage() {
               <table className="library-table">
                 <thead>
                   <tr>
-                    <th scope="col">Cover</th>
+                    {showCovers && <th scope="col">Cover</th>}
                     <th scope="col"><button type="button" onClick={() => changeSort('TITLE')}>Title {sort === 'TITLE' && (sortDirection === 'ASC' ? '↑' : '↓')}</button></th>
                     <th scope="col">Access</th>
                     <th scope="col"><button type="button" onClick={() => changeSort('PLAYTIME')}>Playtime {sort === 'PLAYTIME' && (sortDirection === 'ASC' ? '↑' : '↓')}</button></th>
                     <th scope="col"><button type="button" onClick={() => changeSort('LAST_PLAYED')}>Last played {sort === 'LAST_PLAYED' && (sortDirection === 'ASC' ? '↑' : '↓')}</button></th>
-                    <th scope="col">Genres</th>
-                    <th scope="col">Rating</th>
+                    {showGenres && <th scope="col">Genres</th>}
+                    {showRatings && <th scope="col">Rating</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {data.results.map(game => (
                     <tr key={game.steamAppId}>
-                      <td className="library-cover-cell">
+                      {showCovers && <td className="library-cover-cell">
                         {game.coverImageUrl ? <img src={game.coverImageUrl} alt="" /> : <span className="library-no-cover" aria-hidden="true" />}
-                      </td>
+                      </td>}
                       <td><a href={`https://store.steampowered.com/app/${game.steamAppId}`} target="_blank" rel="noreferrer">{game.title}</a></td>
                       <td><span className={`source-badge source-badge--${game.source}`}>{sourceLabel(game.source)}</span></td>
                       <td>{formatPlaytime(game.playtimeMinutes)}</td>
                       <td>{game.lastPlayedAt ?? 'Never'}</td>
-                      <td className="library-genres">{game.genreIds.map(id => genreNames.get(id)).filter(Boolean).join(', ') || '—'}</td>
-                      <td>{game.igdbRating == null ? '—' : game.igdbRating.toFixed(0)}</td>
+                      {showGenres && <td className="library-genres">{game.genreIds.map(id => genreNames.get(id)).filter(Boolean).join(', ') || '—'}</td>}
+                      {showRatings && <td>{game.igdbRating == null ? '—' : game.igdbRating.toFixed(0)}</td>}
                     </tr>
                   ))}
                 </tbody>

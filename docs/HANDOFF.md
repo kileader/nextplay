@@ -2,6 +2,21 @@
 
 ## Latest snapshot (2026-08-26)
 
+**My Games metadata fallback refined:** The library table now hides cover, genre, and rating columns when the current result page has no cache enrichment, leaving a dense Steam-facts table rather than empty placeholders and colliding headers. The genre filter also hides when no matched metadata supplies genres. Import feedback now reports whether any rows matched cached metadata, making sparse matching observable on the next import.
+
+**Files touched:**
+- `frontend/src/pages/MyGamesPage.tsx` — conditional cache-metadata columns/filter and import match feedback.
+
+**Verification:** `frontend` production build green (`tsc -b && vite build`).
+
+**Open risk:** Current imported rows appear to have little or no `GameCache` enrichment. Re-import after this deploy to see the exact match count, then investigate cache Steam AppID coverage if it remains near zero.
+
+**Next sensible step:** Commit and deploy this UI fallback; then re-import `local-data/library.csv` and use the displayed cache-match count to decide whether a cache-coverage repair is needed.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **My Games first-import UI refined:** The page now gives Steam Family CSV import its own full-width action band, with a styled file chooser and clear selected-file state. Before an import, it shows an honest empty-library prompt instead of filters plus a misleading “no games match” result. Filters stay visible once games exist or when they are actively narrowing a result set. Navigation now marks the current My Games or Value Rankings location.
 
 **Local follow-up fixes (not deployed until next push):** `frontend/vercel.json` now rewrites direct routes to `index.html`, so refreshes on `/signup` and `/my-games` do not receive a Vercel 404. CSV imports now abort after 60 seconds and return an actionable timeout message rather than leaving the control indefinitely in an importing state. Railway’s production CORS preflight for `https://mynextplay.vercel.app` was verified as successful after the variable correction.
