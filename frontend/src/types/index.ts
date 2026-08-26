@@ -146,6 +146,7 @@ export type RankingConfigRequest = {
 // --- My Games ---
 
 export type UserGameSort = 'TITLE' | 'PLAYTIME' | 'LAST_PLAYED';
+export type UserGameStatus = 'BACKLOG' | 'PLAYING' | 'COMPLETED' | 'DROPPED';
 
 export type UserGameResult = {
   id: number | null;
@@ -157,6 +158,7 @@ export type UserGameResult = {
   playtimeMinutes: number;
   acquiredAt: string | null;
   lastPlayedAt: string | null;
+  status: UserGameStatus | null;
   igdbGameId: number | null;
   coverImageUrl: string | null;
   igdbRating: number | null;
@@ -174,6 +176,8 @@ export type UserGamePage = {
 export type UserGameQuery = {
   playable?: boolean;
   played?: boolean;
+  status?: UserGameStatus;
+  uncategorized?: boolean;
   source?: string;
   genreIds?: number[];
   title?: string;

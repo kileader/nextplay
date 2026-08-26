@@ -9,10 +9,13 @@ import com.kevinleader.bgr.dto.usergame.UserGameSort;
 import com.kevinleader.bgr.entity.AppUser;
 import com.kevinleader.bgr.entity.GameCache;
 import com.kevinleader.bgr.entity.UserGame;
+import com.kevinleader.bgr.entity.UserGameStatus;
 import com.kevinleader.bgr.entity.GenreHltbFallback;
 import com.kevinleader.bgr.repository.GenreHltbFallbackRepository;
 import com.kevinleader.bgr.repository.UserGameRepository;
+import com.kevinleader.bgr.exception.NotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -44,6 +47,7 @@ public class UserGameService {
         List<UserGame> filtered = userGames.stream()
                 .filter(game -> game.isPlayable() == query.playable())
                 .filter(game -> matchesPlayed(game, query.played()))
+                .filter(game -> matchesStatus(game, query.status(), query.uncategorized()))
                 .filter(game -> matchesSource(game, query.source()))
                 .filter(game -> matchesTitle(game, query.title()))
                 .filter(game -> matchesGenres(game, query.genreIds()))
@@ -57,6 +61,14 @@ public class UserGameService {
                 .toList();
 
         return new UserGamePageDto(query.offset(), query.limit(), filtered.size(), results, availableGenres);
+    }
+
+    @Transactional
+    public UserGameResultDto updateStatus(AppUser user, int steamAppId, UserGameStatus status) {
+        UserGame game = userGameRepository.findByUserAndSteamAppId(user, steamAppId)
+                .orElseThrow(() -> new NotFoundException("Game not found in your library"));
+        game.setStatus(status);
+        return toResult(game);
     }
 
     private void validateQuery(UserGameQueryDto query) {
@@ -88,6 +100,13 @@ public class UserGameService {
 
     private boolean matchesPlayed(UserGame game, Boolean played) {
         return played == null || (game.getPlaytimeMinutes() > 0) == played;
+    }
+
+    private boolean matchesStatus(UserGame game, UserGameStatus status, Boolean uncategorized) {
+        if (Boolean.TRUE.equals(uncategorized)) {
+            return game.getStatus() == null;
+        }
+        return status == null || game.getStatus() == status;
     }
 
     private boolean matchesSource(UserGame game, String source) {
@@ -127,6 +146,7 @@ public class UserGameService {
         return new UserGameResultDto(
                 game.getId(), game.getSteamAppId(), game.getSteamTitle(), game.getSteamSource(), game.isPlayable(),
                 game.getExcludeReason(), game.getPlaytimeMinutes(), game.getAcquiredAt(), game.getLastPlayedAt(),
+                game.getStatus(),
                 cache == null ? null : cache.getIgdbGameId(),
                 cache == null ? null : cache.getCoverImageUrl(),
                 cache == null ? null : cache.getIgdbRating(),

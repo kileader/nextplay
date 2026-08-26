@@ -2,7 +2,9 @@ package com.kevinleader.bgr.controller;
 
 import com.kevinleader.bgr.dto.usergame.SteamFamilyImportResultDto;
 import com.kevinleader.bgr.dto.usergame.UserGamePageDto;
+import com.kevinleader.bgr.dto.usergame.UserGameStatusUpdateRequestDto;
 import com.kevinleader.bgr.entity.AppUser;
+import com.kevinleader.bgr.entity.UserGameStatus;
 import com.kevinleader.bgr.security.AppUserPrincipal;
 import com.kevinleader.bgr.service.SteamFamilyLibraryImportService;
 import com.kevinleader.bgr.service.UserGameService;
@@ -35,5 +37,18 @@ class UserGameControllerTest {
 
         assertThat(result).isEqualTo(expected);
         verify(service).importCsv(user, file);
+    }
+
+    @Test
+    void updatesStatusForAuthenticatedUser() {
+        UserGameService service = mock(UserGameService.class);
+        UserGameController controller = new UserGameController(mock(SteamFamilyLibraryImportService.class), service);
+        AppUser user = new AppUser();
+        AppUserPrincipal principal = new AppUserPrincipal(user);
+        UserGameStatusUpdateRequestDto request = new UserGameStatusUpdateRequestDto(UserGameStatus.PLAYING);
+
+        controller.updateStatus(principal, 10, request);
+
+        verify(service).updateStatus(user, 10, UserGameStatus.PLAYING);
     }
 }

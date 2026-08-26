@@ -3,6 +3,8 @@ package com.kevinleader.bgr.dto.usergame;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.kevinleader.bgr.entity.UserGameStatus;
+
 public record UserGameResultDto(
         Long id,
         int steamAppId,
@@ -13,6 +15,7 @@ public record UserGameResultDto(
         int playtimeMinutes,
         LocalDate acquiredAt,
         LocalDate lastPlayedAt,
+        UserGameStatus status,
         Long igdbGameId,
         String coverImageUrl,
         BigDecimal igdbRating,

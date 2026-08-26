@@ -8,6 +8,7 @@ import com.kevinleader.bgr.entity.AppUser;
 import com.kevinleader.bgr.entity.GameCache;
 import com.kevinleader.bgr.entity.GenreHltbFallback;
 import com.kevinleader.bgr.entity.UserGame;
+import com.kevinleader.bgr.entity.UserGameStatus;
 import com.kevinleader.bgr.repository.GenreHltbFallbackRepository;
 import com.kevinleader.bgr.repository.UserGameRepository;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ class UserGameServiceTest {
         when(genreRepository.findAllById(any())).thenReturn(List.of(genre));
 
         UserGamePageDto page = service.getGamesPage(user, new UserGameQueryDto(
-                true, false, null, List.of(12), "alp", UserGameSort.TITLE, SortDirection.ASC, 0, 50
+                true, false, null, null, null, List.of(12), "alp", UserGameSort.TITLE, SortDirection.ASC, 0, 50
         ));
 
         assertThat(page.total()).isEqualTo(1);
@@ -64,10 +65,25 @@ class UserGameServiceTest {
         when(userGameRepository.findLibraryByUser(user)).thenReturn(List.of(shortPlay, longPlay));
 
         UserGamePageDto page = service.getGamesPage(user, new UserGameQueryDto(
-                true, true, null, null, null, UserGameSort.PLAYTIME, SortDirection.DESC, 1, 1
+                true, true, null, null, null, null, null, UserGameSort.PLAYTIME, SortDirection.DESC, 1, 1
         ));
 
         assertThat(page.total()).isEqualTo(2);
+        assertThat(page.results()).extracting(result -> result.title()).containsExactly("Alpha");
+    }
+
+    @Test
+    void filtersByExplicitStatusWithoutInferringItFromPlaytime() {
+        AppUser user = new AppUser();
+        UserGame backlog = game(1, "Alpha", "own", true, 100, null, null);
+        backlog.setStatus(UserGameStatus.BACKLOG);
+        UserGame uncategorized = game(2, "Beta", "own", true, 0, null, null);
+        when(userGameRepository.findLibraryByUser(user)).thenReturn(List.of(backlog, uncategorized));
+
+        UserGamePageDto page = service.getGamesPage(user, new UserGameQueryDto(
+                true, null, UserGameStatus.BACKLOG, null, null, null, null, UserGameSort.TITLE, SortDirection.ASC, 0, 50
+        ));
+
         assertThat(page.results()).extracting(result -> result.title()).containsExactly("Alpha");
     }
 

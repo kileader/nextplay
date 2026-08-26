@@ -4,6 +4,7 @@ import com.kevinleader.bgr.dto.usergame.SteamFamilyImportResultDto;
 import com.kevinleader.bgr.entity.AppUser;
 import com.kevinleader.bgr.entity.GameCache;
 import com.kevinleader.bgr.entity.UserGame;
+import com.kevinleader.bgr.entity.UserGameStatus;
 import com.kevinleader.bgr.repository.GameCacheRepository;
 import com.kevinleader.bgr.repository.UserGameRepository;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ class SteamFamilyLibraryImportServiceTest {
         UserGame existing = new UserGame();
         existing.setUser(user);
         existing.setSteamAppId(10);
+        existing.setStatus(UserGameStatus.BACKLOG);
 
         GameCache singleMatch = cache(101L, 10, "Existing Game");
         GameCache ambiguousFirst = cache(201L, 20, "Different Game");
@@ -55,6 +57,7 @@ class SteamFamilyLibraryImportServiceTest {
         assertThat(existing.getGameCache()).isSameAs(singleMatch);
         assertThat(existing.getPlaytimeMinutes()).isEqualTo(120);
         assertThat(existing.getLastPlayedAt()).isEqualTo(LocalDate.of(2024, 2, 3));
+        assertThat(existing.getStatus()).isEqualTo(UserGameStatus.BACKLOG);
 
         ArgumentCaptor<Iterable<UserGame>> gamesCaptor = ArgumentCaptor.forClass(Iterable.class);
         verify(userGameRepository).saveAll(gamesCaptor.capture());

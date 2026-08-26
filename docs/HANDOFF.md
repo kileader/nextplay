@@ -2,6 +2,23 @@
 
 ## Latest snapshot (2026-08-26)
 
+**Personal statuses added to My Games:** `UserGame` now has an optional user-managed status: Backlog, Playing, Completed, or Dropped. Existing and imported games begin uncategorized; Steam playtime remains a separate fact and re-imports preserve a status for a game still in the CSV. My Games has a status filter, including Not categorized, and a compact per-game selector. `PATCH /users/me/games/{steamAppId}/status` updates only the authenticated user's matching library row.
+
+**Files touched:**
+- `backend/src/main/resources/db/migration/V13__add_user_game_status.sql`, `entity/UserGame.java`, `entity/UserGameStatus.java` — nullable constrained status persistence.
+- `backend/src/main/java/com/kevinleader/bgr/dto/usergame/`, `UserGameController.java`, `UserGameService.java` — status query/result contract and authenticated update endpoint.
+- `backend/src/test/java/com/kevinleader/bgr/service/SteamFamilyLibraryImportServiceTest.java`, `UserGameServiceTest.java`, `controller/UserGameControllerTest.java` — filter, endpoint delegation, and import-preservation coverage.
+- `frontend/src/api/userGames.ts`, `frontend/src/types/index.ts`, `frontend/src/pages/MyGamesPage.*` — status filter and inline editing.
+- `docs/DECISIONS.md`, `docs/NEXT_STEPS.md`, `docs/HANDOFF.md` — status and import semantics.
+
+**Verification:** `backend/mvnw.cmd test` green (75 tests). `frontend` production build green (`tsc -b && vite build`).
+
+**Next sensible step:** Deploy backend and frontend together so Railway applies V13, then assign a few real-game statuses and assess the My Games workflow before expanding it.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **Steam-library re-imports now replace the prior snapshot:** After full CSV validation, the importer updates or creates rows present in the export and deletes only the authenticated user's rows that are absent. The import result and My Games feedback report the removed count. This makes the small `local-data/library-test.csv` fixture a useful replacement-library test.
 
 **Files touched:**

@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError } from '../api/client';
-import { getUserGames, importSteamFamilyLibrary } from '../api/userGames';
+import { getUserGames, importSteamFamilyLibrary, updateUserGameStatus } from '../api/userGames';
 import { useAuth } from '../context/AuthContext';
-import type { SteamFamilyImportResult, UserGamePage, UserGameSort } from '../types';
+import type { SteamFamilyImportResult, UserGamePage, UserGameSort, UserGameStatus } from '../types';
 import './MyGamesPage.css';
 
 const PAGE_LIMIT = 50;
 type ImportPhase = 'importing' | 'refreshing' | null;
+type StatusFilter = UserGameStatus | 'uncategorized' | '';
 
 function formatPlaytime(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
@@ -22,11 +23,16 @@ function sourceLabel(source: string): string {
   return source;
 }
 
+function statusLabel(status: UserGameStatus): string {
+  return status.charAt(0) + status.slice(1).toLowerCase();
+}
+
 export default function MyGamesPage() {
   const { token, isLoggedIn } = useAuth();
   const [data, setData] = useState<UserGamePage | null>(null);
   const [title, setTitle] = useState('');
   const [played, setPlayed] = useState('all');
+  const [status, setStatus] = useState<StatusFilter>('');
   const [source, setSource] = useState('');
   const [genreId, setGenreId] = useState('');
   const [sort, setSort] = useState<UserGameSort>('TITLE');
@@ -38,11 +44,14 @@ export default function MyGamesPage() {
   const [importElapsedSeconds, setImportElapsedSeconds] = useState(0);
   const [importResult, setImportResult] = useState<SteamFamilyImportResult | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
+  const [statusUpdateAppId, setStatusUpdateAppId] = useState<number | null>(null);
   const importControllerRef = useRef<AbortController | null>(null);
 
   const request = useMemo(() => ({
     playable: true,
     played: played === 'all' ? undefined : played === 'played',
+    status: status === 'uncategorized' ? undefined : status || undefined,
+    uncategorized: status === 'uncategorized' || undefined,
     source: source || undefined,
     genreIds: genreId ? [Number(genreId)] : undefined,
     title,
@@ -50,7 +59,7 @@ export default function MyGamesPage() {
     sortDirection,
     offset,
     limit: PAGE_LIMIT,
-  }), [title, played, source, genreId, sort, sortDirection, offset]);
+  }), [title, played, status, source, genreId, sort, sortDirection, offset]);
 
   useEffect(() => {
     if (!token) return;
@@ -121,6 +130,20 @@ export default function MyGamesPage() {
     importControllerRef.current?.abort();
   }
 
+  async function handleStatusChange(steamAppId: number, nextStatus: string) {
+    if (!token) return;
+    setStatusUpdateAppId(steamAppId);
+    setError(null);
+    try {
+      await updateUserGameStatus(steamAppId, nextStatus === '' ? null : nextStatus as UserGameStatus, token);
+      setRefreshNonce(current => current + 1);
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : 'Failed to update this game status.');
+    } finally {
+      setStatusUpdateAppId(null);
+    }
+  }
+
   if (!isLoggedIn) {
     return (
       <div className="my-games-page my-games-auth">
@@ -133,7 +156,7 @@ export default function MyGamesPage() {
   const genreNames = new Map(data?.availableGenres.map(genre => [genre.id, genre.name]));
   const pageStart = data && data.total > 0 ? data.offset + 1 : 0;
   const pageEnd = data ? Math.min(data.offset + data.results.length, data.total) : 0;
-  const hasActiveFilters = title.trim().length > 0 || played !== 'all' || source !== '' || genreId !== '';
+  const hasActiveFilters = title.trim().length > 0 || played !== 'all' || status !== '' || source !== '' || genreId !== '';
   const showCovers = data?.results.some(game => game.coverImageUrl !== null) ?? false;
   const showGenres = data?.results.some(game => game.genreIds.length > 0) ?? false;
   const showRatings = data?.results.some(game => game.igdbRating !== null) ?? false;
@@ -201,6 +224,16 @@ export default function MyGamesPage() {
             </select>
           </label>
           <label>
+            <span>Status</span>
+            <select value={status} onChange={event => { setStatus(event.target.value as StatusFilter); resetForNewQuery(); }}>
+              <option value="">All statuses</option>
+              <option value="uncategorized">Not categorized</option>
+              {(['BACKLOG', 'PLAYING', 'COMPLETED', 'DROPPED'] as UserGameStatus[]).map(option => (
+                <option key={option} value={option}>{statusLabel(option)}</option>
+              ))}
+            </select>
+          </label>
+          <label>
             <span>Access</span>
             <select value={source} onChange={event => { setSource(event.target.value); resetForNewQuery(); }}>
               <option value="">All access</option>
@@ -240,6 +273,7 @@ export default function MyGamesPage() {
                     {showCovers && <th scope="col">Cover</th>}
                     <th scope="col"><button type="button" onClick={() => changeSort('TITLE')}>Title {sort === 'TITLE' && (sortDirection === 'ASC' ? '↑' : '↓')}</button></th>
                     <th scope="col">Access</th>
+                    <th scope="col">Status</th>
                     <th scope="col"><button type="button" onClick={() => changeSort('PLAYTIME')}>Playtime {sort === 'PLAYTIME' && (sortDirection === 'ASC' ? '↑' : '↓')}</button></th>
                     <th scope="col"><button type="button" onClick={() => changeSort('LAST_PLAYED')}>Last played {sort === 'LAST_PLAYED' && (sortDirection === 'ASC' ? '↑' : '↓')}</button></th>
                     {showGenres && <th scope="col">Genres</th>}
@@ -254,6 +288,20 @@ export default function MyGamesPage() {
                       </td>}
                       <td><a href={`https://store.steampowered.com/app/${game.steamAppId}`} target="_blank" rel="noreferrer">{game.title}</a></td>
                       <td><span className={`source-badge source-badge--${game.source}`}>{sourceLabel(game.source)}</span></td>
+                      <td>
+                        <select
+                          className="library-status-select"
+                          aria-label={`Status for ${game.title}`}
+                          value={game.status ?? ''}
+                          disabled={statusUpdateAppId === game.steamAppId}
+                          onChange={event => void handleStatusChange(game.steamAppId, event.target.value)}
+                        >
+                          <option value="">Not categorized</option>
+                          {(['BACKLOG', 'PLAYING', 'COMPLETED', 'DROPPED'] as UserGameStatus[]).map(option => (
+                            <option key={option} value={option}>{statusLabel(option)}</option>
+                          ))}
+                        </select>
+                      </td>
                       <td>{formatPlaytime(game.playtimeMinutes)}</td>
                       <td>{game.lastPlayedAt ?? 'Never'}</td>
                       {showGenres && <td className="library-genres">{game.genreIds.map(id => genreNames.get(id)).filter(Boolean).join(', ') || '—'}</td>}

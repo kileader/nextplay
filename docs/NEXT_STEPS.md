@@ -3,10 +3,10 @@
 ## Start here (NextPlay, 2026-08-26)
 
 1. **Use My Games with the real Steam Family CSV** — deploy the browse API and `/my-games`, import `local-data/library.csv`, then assess cache-match coverage and table usability with the full library.
-2. **Personal game statuses** — add explicit backlog/playing/completed/dropped semantics only after the imported library has been exercised; do not infer status from Steam playtime.
-3. **Value Rankings maintenance** — retain the existing ranking feature, but keep product and pricing trust scope focused on reliable tracked PC prices; do not expand console price estimation.
-4. **Wishlist Watchtower (v1)** — `wishlist_entry` + `WishlistEntry` exist but remain unwired; revisit after status semantics so wishlist can potentially become a `UserGame` status.
-5. **Game detail page** (`/game/:id`) — pairs with personal library/wishlist.
+2. **Exercise personal statuses** — mark a small set of games as backlog/playing/completed/dropped and assess whether the My Games filter and inline control are sufficient before adding more workflow.
+3. **Wishlist Watchtower (v1)** — `wishlist_entry` + `WishlistEntry` exist but remain unwired; revisit now that personal status semantics exist.
+4. **Game detail page** (`/game/:id`) — pairs with personal library/wishlist.
+5. **Value Rankings maintenance** — retain the existing ranking feature, but keep product and pricing trust scope focused on reliable tracked PC prices; do not expand console price estimation.
 
 ## Active queue (maintenance)
 

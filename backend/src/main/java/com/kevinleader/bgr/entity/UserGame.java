@@ -52,6 +52,10 @@ public class UserGame {
     @Column(name = "last_played_at")
     private LocalDate lastPlayedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private UserGameStatus status;
+
     @Column(name = "imported_at", nullable = false)
     private OffsetDateTime importedAt = OffsetDateTime.now();
 
