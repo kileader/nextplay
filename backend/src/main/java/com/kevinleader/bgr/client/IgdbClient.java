@@ -2,6 +2,7 @@ package com.kevinleader.bgr.client;
 
 import com.kevinleader.bgr.dto.igdb.IgdbAuthResponse;
 import com.kevinleader.bgr.dto.igdb.IgdbExternalGameDto;
+import com.kevinleader.bgr.dto.igdb.IgdbExternalGameSourceDto;
 import com.kevinleader.bgr.dto.igdb.IgdbGameDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,6 +100,8 @@ public class IgdbClient {
     public List<SteamGameMatch> fetchGamesBySteamAppIds(Collection<Integer> steamAppIds) {
         if (steamAppIds == null || steamAppIds.isEmpty()) return List.of();
         String token = getAccessToken();
+        Long steamSourceId = fetchExternalGameSourceId(token, "Steam");
+        if (steamSourceId == null) return List.of();
         String ids = steamAppIds.stream().map(String::valueOf).map(id -> "\"" + id + "\"")
                 .collect(java.util.stream.Collectors.joining(","));
         List<IgdbExternalGameDto> externalGames = igdbRestClient.post()
@@ -106,12 +109,12 @@ public class IgdbClient {
                 .header("Client-ID", clientId)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.TEXT_PLAIN)
-                .body("fields category,game,uid; where uid = (" + ids + ");")
+                .body("fields external_game_source,game,uid; where external_game_source = " + steamSourceId
+                        + " & uid = (" + ids + ");")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
         if (externalGames == null || externalGames.isEmpty()) return List.of();
         List<IgdbExternalGameDto> steamExternalGames = externalGames.stream()
-                .filter(externalGame -> externalGame.category() != null && externalGame.category() == STEAM_CATEGORY)
                 .filter(externalGame -> externalGame.game() != null)
                 .toList();
         String gameIds = steamExternalGames.stream().map(IgdbExternalGameDto::game)
@@ -133,6 +136,22 @@ public class IgdbClient {
                 .map(externalGame -> toSteamGameMatch(externalGame, gamesById.get(externalGame.game())))
                 .filter(java.util.Objects::nonNull)
                 .toList();
+    }
+
+    private Long fetchExternalGameSourceId(String token, String sourceName) {
+        List<IgdbExternalGameSourceDto> sources = igdbRestClient.post()
+                .uri("/external_game_sources")
+                .header("Client-ID", clientId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body("fields id,name; where name = \"" + sourceName + "\";")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+        return sources == null ? null : sources.stream()
+                .filter(source -> source.id() != null)
+                .map(IgdbExternalGameSourceDto::id)
+                .findFirst()
+                .orElse(null);
     }
 
     private SteamGameMatch toSteamGameMatch(IgdbExternalGameDto externalGame, IgdbGameDto game) {

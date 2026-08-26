@@ -29,7 +29,7 @@ class IgdbClientResolveSteamTest {
                 null,
                 null,
                 new IgdbExternalIdsDto(N.numberNode(111)),
-                List.of(new IgdbExternalGameDto(1, "222", null)),
+                List.of(new IgdbExternalGameDto(1, "222", null, null)),
                 null
         );
         assertThat(IgdbClient.resolveSteamAppId(dto)).isEqualTo(111);
@@ -50,7 +50,7 @@ class IgdbClientResolveSteamTest {
                 null,
                 null,
                 null,
-                List.of(new IgdbExternalGameDto(1, "222", null)),
+                List.of(new IgdbExternalGameDto(1, "222", null, null)),
                 null
         );
         assertThat(IgdbClient.resolveSteamAppId(dto)).isEqualTo(222);
