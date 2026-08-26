@@ -43,4 +43,4 @@ Repo files (`HANDOFF`, `DECISIONS`, etc.) are **deliberate** shared memory for e
 
 ## Repo-specific notes for Phi
 
-BGR product context, priorities, and “what to do next” orientation for **this** project live in **`docs/PHI_PROJECT_INSTRUCTIONS.md`** (continuity/orientation) and the handoff trio **`HANDOFF` / `NEXT_STEPS` / `DECISIONS`**. Technical truth wins over any informal summary.
+NextPlay product context, priorities, and “what to do next” orientation for **this** project live in **`docs/PHI_PROJECT_INSTRUCTIONS.md`** (continuity/orientation) and the handoff trio **`HANDOFF` / `NEXT_STEPS` / `DECISIONS`**. Technical truth wins over any informal summary.

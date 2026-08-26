@@ -1359,7 +1359,7 @@ function GameCard({
             }
           >
             <img
-              src="/bgr_favicon.svg"
+              src="/nextplay_favicon.svg"
               alt=""
               className="game-card-value-icon"
               width={12}
@@ -1639,7 +1639,7 @@ export default function RankingsPage() {
 
   return (
     <div className="rankings-page">
-      <h1>Game Rankings</h1>
+      <h1>Value Rankings</h1>
       <p className="rankings-subtitle">Ranked by value: rating × playtime ÷ price.</p>
       <p className="rankings-price-note">
         <strong className="price-pc-est-badge price-pc-est-badge--inline">Est</strong> on a price means a{' '}

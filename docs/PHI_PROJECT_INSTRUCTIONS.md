@@ -1,57 +1,60 @@
-# Notes for Phi — BGR context (use in ChatGPT)
+# Notes for Phi - NextPlay context (use in ChatGPT)
 
-**Phi** here means **native ChatGPT** (Kevin’s continuity/orientation assistant — see **`docs/PHI_AND_CID.md`**). This file is **not** for an in-repo agent named Phi; it’s **background you can paste or summarize** when working with Phi on Budget Game Rankings.
+**Phi** here means **native ChatGPT** (Kevin's continuity/orientation assistant - see **`docs/PHI_AND_CID.md`**). This file is **not** for an in-repo agent named Phi; it is background you can paste or summarize when working with Phi on NextPlay.
 
-**Cid** (Cursor build agent) should use `AGENTS.md` plus `docs/HANDOFF.md`, `docs/DECISIONS.md`, and `docs/NEXT_STEPS.md` for facts. If this file conflicts with those, **repo handoff docs win** for engineering truth.
+**Cid** (implementation agent) should use `AGENTS.md` plus `docs/HANDOFF.md`, `docs/DECISIONS.md`, and `docs/NEXT_STEPS.md` for facts. If this file conflicts with those, **repo handoff docs win** for engineering truth.
 
-Use this file together with the handoff trio for **intent and priorities**. If intent conflicts with code reality, **flag it** and prefer **repo files** for what’s actually shipped.
+Use this file together with the handoff trio for intent and priorities. If intent conflicts with code reality, flag it and prefer repo files for what is actually shipped.
 
 ---
 
 ## What this repo is
 
-- **BGR** — a **game value-ranking** product (ratings, playtime, price signals, filters, accounts, saved configs).
-- **Stack:** React + Spring Boot + Postgres + IGDB / CheapShark / HLTB nightly-style sync. See `docs/HANDOFF.md` for the latest technical snapshot.
+- **NextPlay** helps a user decide what to play next from games they already own or can access.
+- **My Games** is the immediate foundation: imported library records, ownership/access source, playtime, and eventually personal statuses.
+- **Value Rankings** is the retained ranking feature: a public rating/playtime/price view when reliable PC pricing exists.
+- **Stack:** React + Spring Boot + Postgres + IGDB / CheapShark / HLTB sync. See `docs/HANDOFF.md` for the latest technical snapshot.
 
 ---
 
 ## Where product intent is right now
 
-- **Pricing and storefront data are a known pain:** deal coverage depends on **Steam app ids** and sync health. Do **not** promise perfect dollars. Prefer **honest labeling** (deal vs estimate) and **admin tooling** (`docs/ADMIN_API.md`) over pretending the pipeline is omniscient.
-- **Wishlist Watchtower** (wishlist API + UI) is **not** automatically the top priority — it was planned in `docs/NEXT_STEPS.md` but may be **deferred** if pricing trust isn’t there. Treat it as **V3 / expansion** unless the user explicitly pulls it into sprint scope.
-- The maintainer may be **50/50** on continuing BGR vs **exploring other gaming app ideas**. When they say so: help **brainstorm** and **scope** new concepts; **reuse** this codebase/DB where it makes sense; **do not** merge unrelated products into BGR without an explicit decision.
+- Build the personal library before recommendations, alerts, or live Steam sync. The Steam Family CSV importer is the first ingestion path.
+- **Value Rankings** remains useful, but reliable PC pricing is its scope. Do not make console price estimates or broad storefront pricing the foundation of NextPlay.
+- Wishlist is a later personal-library feature, not an automatic immediate priority.
+- Prefer small vertical slices that make Kevin's own library usable over speculative product abstractions.
 
 ---
 
 ## Default decision question
 
-**What helps ship something users can trust next, and what should wait?**
+**What makes the accessible library more useful for deciding what to play next?**
 
-For anything that depends on **accurate real-time prices** or **complete Steam coverage**, flag **high product + engineering risk**.
+Flag high product and engineering risk for work depending on real-time pricing, complete Steam coverage, or recommendation claims that outpace personal-library data.
 
 ---
 
 ## What to do when you land in the repo
 
 1. Read **`docs/HANDOFF.md`** (latest snapshot first), then **`docs/NEXT_STEPS.md`**, then **`docs/DECISIONS.md`**.
-2. Check **`docs/ADMIN_API.md`** if the task involves cache sync, ops, or pricing refresh.
-3. **Dates in docs:** Use the **user’s actual calendar date** when adding dated sections — do not invent “tomorrow’s” date from chat context.
+2. Check **`docs/ADMIN_API.md`** if the task involves cache sync, ops, or Value Rankings pricing refresh.
+3. Dates in docs should use the user's actual calendar date.
 
 ---
 
 ## Practical next moves (pick with the user)
 
-| If the goal is… | Lean toward… |
-|-----------------|--------------|
-| **More trustworthy prices in prod** | Deploy backend; run **`POST /admin/sync/igdb`** then **`POST /admin/sync/cheapshark`** (or full **`POST /admin/sync`**). Re-check **`steam_app_id`** counts after IGDB sync includes **`external.steam`**. |
-| **Finish a shippable BGR slice** | Rankings polish, trust copy, filters, saved configs, mobile pass — **not** new pricing oracle logic unless scoped. |
-| **Pivot or side project** | Short **problem / user / 2-week MVP**; optional reuse: same DB, new read models, or new repo. |
-| **Wishlist** | Only after the user confirms priority; entity exists, API/UI do not. |
+| If the goal is... | Lean toward... |
+|------------------|----------------|
+| **Browse Kevin's library** | My Games browse API, then a dense usable frontend table with filtering and sorting. |
+| **Choose what to play next** | First improve personal-library facts and statuses; do not build recommendations until the foundation is useful. |
+| **More trustworthy Value Rankings prices** | Keep the scope to tracked PC deals, honest deal/estimate labeling, and cache-sync health. |
+| **Wishlist** | Add it after My Games has a stable user-game foundation. |
 
 ---
 
 ## Style
 
-- Practical, concise, **scope-cutting**.
-- Separate **V2 / now**, **V3 / later**, **out of scope**.
-- No guilt about deferring features that depend on unreliable third-party data.
+- Practical, concise, scope-cutting.
+- Separate now, later, and out of scope.
+- Do not overpromise third-party data quality.

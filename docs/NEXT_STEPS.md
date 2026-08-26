@@ -1,11 +1,12 @@
 # Next Steps
 
-## Start here (2026-08-26)
+## Start here (NextPlay, 2026-08-26)
 
 1. **My Games browse API** — Steam Family CSV import backend is complete. Add authenticated `GET /users/me/games` with pagination, playable/played/source/title/genre filters, and title/playtime sorting.
 2. **My Games frontend** — `/my-games` route, upload/import control, and dense table/list for 1,000+ playable games.
-3. **Wishlist Watchtower (v1)** — `wishlist_entry` + `WishlistEntry` exist but remain unwired; revisit after My Games foundation so wishlist can potentially become a `UserGame` status.
-4. **Game detail page** (`/game/:id`) — pairs with personal library/wishlist.
+3. **Value Rankings maintenance** — retain the existing ranking feature, but keep product and pricing trust scope focused on reliable tracked PC prices; do not expand console price estimation.
+4. **Wishlist Watchtower (v1)** — `wishlist_entry` + `WishlistEntry` exist but remain unwired; revisit after My Games foundation so wishlist can potentially become a `UserGame` status.
+5. **Game detail page** (`/game/:id`) — pairs with personal library/wishlist.
 
 ## Active queue (maintenance)
 

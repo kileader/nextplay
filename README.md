@@ -1,22 +1,23 @@
-# Budget Game Rankings
+# NextPlay
 
-Ranks video games by value — not just rating, not just price, but both combined with playtime.
+NextPlay helps you decide what to play next from games you already own or can access. It is evolving into a personal game library, with Steam Family CSV import as its first practical ingestion path.
 
-**Value score:** `(IGDB rating × hours to beat) / lowest current price`
-
-Filter by platform, genre, release window, price range, and playtime. The result is a ranked list of games that are actually worth your money.
+The original Budget Game Rankings app remains here as **Value Rankings**: a separate way to browse games by rating, playtime, and price when reliable PC price data is available.
 
 ---
 
-## Status
+## Product Direction
 
-V2 is in active development. V1 was a Java school project (Madison College, Spring 2021) — working but built on outdated patterns. V2 is a full rebuild.
+- **My Games** - owned and family-shared games, playtime, and eventually personal statuses.
+- **NextPlay** - future decision support for choosing from the accessible library.
+- **Value Rankings** - the existing public rating/playtime/price ranking feature.
+- **Wishlist** - games the user may want to buy.
 
-[V1 video demo](https://youtu.be/8lMcARkRcuE)
+Only the existing Steam Family import and Value Rankings functionality are implemented today. Recommendations, alerts, and status management are intentionally not part of this rename.
 
 ---
 
-## V2 Stack
+## Stack
 
 **Backend**
 - Java, Spring Boot
@@ -37,7 +38,9 @@ V2 is in active development. V1 was a Java school project (Madison College, Spri
 
 ---
 
-## How the Ranking Works
+## Value Rankings
+
+**Value score:** `(IGDB rating x hours to beat) / lowest current price`
 
 1. Game data is cached nightly from IGDB, CheapShark, and HowLongToBeat
 2. User sets filters (platform, genre, price range, playtime range, release window)
@@ -56,17 +59,17 @@ value_score = (igdb_rating × resolved_hours) / price_in_dollars
 - Games with fewer than 10 IGDB user ratings
 - Games with no price data and no platform-tier estimate
 
-**Console-only pricing:** CheapShark covers PC storefronts only. Console-exclusive games use a fixed estimated price by platform generation.
+**Pricing scope:** CheapShark covers PC storefronts. Current console estimates remain for compatibility with the existing feature, but they are not the foundation for NextPlay and will not be expanded as a trusted pricing system.
 
 ---
 
-## V2 Features
+## Current Features
 
-- Public ranking page — no account required
-- User accounts — signup, login, JWT auth
-- Saved ranking configurations — save and reuse your filter settings
-- Wishlist — track specific games, run the value ranking on your wishlist
-- Admin panel — user management, manual cache refresh, sync status
+- Public Value Rankings page - no account required
+- User accounts - signup, login, JWT auth
+- Saved Value Rankings configurations
+- Steam Family CSV import backend for a personal library
+- Admin panel - user management, manual cache refresh, sync status
 
 ---
 
@@ -81,6 +84,8 @@ frontend/ (React + TypeScript)  →  backend/ (Spring Boot REST API)  →  Postg
 
 ---
 
-## V1 Technologies (for reference)
+## Project History
+
+V1 was a Java school project (Madison College, Spring 2021). V2 is the current React and Spring Boot rebuild. The original V1 demo is available [here](https://youtu.be/8lMcARkRcuE).
 
 The original school project used: Tomcat JDBC Realm auth, MySQL 8, Hibernate 5, Maven WAR packaging, JSP/JSTL views, Bootstrap 4, jQuery DataTables, Log4j2, JUnit 4/5, hosted on AWS.

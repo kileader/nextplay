@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.kevinleader</groupId>
-	<artifactId>bgr-backend</artifactId>
+	<artifactId>nextplay-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>bgr-backend</name>
-	<description>Budget Game Rankings API</description>
+	<name>nextplay-backend</name>
+	<description>NextPlay API</description>
 	<properties>
 		<java.version>21</java.version>
 		<jjwt.version>0.12.6</jjwt.version>

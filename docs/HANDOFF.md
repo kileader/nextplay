@@ -2,6 +2,25 @@
 
 ## Latest snapshot (2026-08-26)
 
+**NextPlay rename complete:** The product is now branded **NextPlay**. The existing public ranking experience is labeled **Value Rankings** and remains intact. The first-stage rename updates user-facing branding, frontend metadata/assets, Maven and Spring application identity, and current product documentation without changing routes, database schema/history, Java packages, or browser-storage keys.
+
+**Files touched:**
+- `README.md` — reframed the app as a personal game-library product and documented Value Rankings as a retained feature.
+- `frontend/index.html`, `frontend/src/components/Nav.tsx`, `frontend/src/pages/RankingsPage.tsx`, `frontend/package.json`, `frontend/package-lock.json` — NextPlay branding, Value Rankings page label, and frontend package metadata.
+- `frontend/public/nextplay_favicon*` — renamed former BGR favicon assets; SVG accessibility label updated.
+- `backend/pom.xml`, `backend/src/main/resources/application.properties` — `nextplay-backend` Maven and Spring application identity.
+- `docs/PHI_PROJECT_INSTRUCTIONS.md`, `docs/PHI_AND_CID.md`, `docs/DECISIONS.md`, `docs/NEXT_STEPS.md` — updated product context, decisions, and priorities.
+
+**Verification:** `backend/mvnw.cmd test` green (70 tests). `frontend` production build green (`tsc -b && vite build`).
+
+**Open risks / blockers:** GitHub repository, local directory, Railway project, Vercel project, and domains have not been renamed. Rename those outside this commit and then update `origin` to the new GitHub repository URL. No database migration is part of the product rename.
+
+**Next sensible step:** Continue the NextPlay My Games vertical slice with the paginated browse API, then the frontend library view and import control.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **Steam Family CSV import backend complete:** Authenticated users can now upload an export to `POST /users/me/games/import/steam-family` using multipart field `file`. The importer validates the complete file before saving, upserts by `(user_id, steam_app_id)`, preserves Steam facts, and links `game_cache` metadata only for unambiguous AppID matches. It does not delete rows missing from a later export.
 
 **Files touched:**
