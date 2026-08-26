@@ -17,8 +17,6 @@ public record IgdbGameDto(
         IgdbCoverDto cover,
         String url,
         @JsonProperty("game_modes") List<Integer> gameModes,
-        /** Direct Steam id when IGDB exposes {@code external.steam} (preferred). */
-        @JsonProperty("external") IgdbExternalIdsDto external,
         @JsonProperty("external_games") List<IgdbExternalGameDto> externalGames,
         @JsonProperty("age_ratings") List<IgdbAgeRatingDto> ageRatings
 ) {}

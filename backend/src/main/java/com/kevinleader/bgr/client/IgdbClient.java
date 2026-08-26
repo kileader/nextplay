@@ -30,7 +30,6 @@ public class IgdbClient {
     private static final String FIELDS =
             "fields id,name,summary,rating,rating_count,platforms,genres," +
             "first_release_date,cover.image_id,url,game_modes," +
-            "external.steam," +
             "external_games.uid,external_games.category," +
             "age_ratings.rating_category.rating,age_ratings.organization.name";
 
@@ -174,16 +173,10 @@ public class IgdbClient {
         return gameModes != null && gameModes.contains(SINGLE_PLAYER_MODE);
     }
 
-    /**
-     * Resolves Steam app id: prefers IGDB {@code external.steam}, then the legacy
-     * {@code external_games} list (category Steam = 1).
-     */
+    /** Resolves a Steam AppID from IGDB's legacy external-games collection. */
     public static Integer resolveSteamAppId(IgdbGameDto dto) {
         if (dto == null) {
             return null;
-        }
-        if (dto.external() != null && dto.external().steamAppId() != null) {
-            return dto.external().steamAppId();
         }
         return extractSteamAppId(dto.externalGames());
     }

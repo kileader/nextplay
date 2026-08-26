@@ -2,6 +2,21 @@
 
 ## Latest snapshot (2026-08-26)
 
+**IGDB enrichment production fix:** IGDB rejects the obsolete `external.steam` game field, which caused `Find game details` to fail with HTTP 400 before any cache rows could be saved. The shared game query now relies on `external_games`; targeted enrichment continues to resolve through `external_game_sources` and keeps the requested Steam AppID explicitly.
+
+**Files touched:**
+- `backend/src/main/java/com/kevinleader/bgr/client/IgdbClient.java`, `dto/igdb/IgdbGameDto.java` — remove the unsupported field and DTO member.
+- `backend/src/test/java/com/kevinleader/bgr/client/IgdbClientResolveSteamTest.java` — align Steam-ID resolution coverage.
+- `docs/DECISIONS.md`, `docs/HANDOFF.md` — record the supported IGDB mapping approach.
+
+**Verification:** `backend/mvnw.cmd test` green (75 tests).
+
+**Next sensible step:** Deploy the backend, run **Find game details** once, and use the reported match count to determine any remaining coverage issue.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **Steam metadata enrichment is now usable:** My Games exposes **Find game details**, which batches the authenticated user's unmatched Steam AppIDs through IGDB, saves the returned metadata in `game_cache`, links resolved `UserGame` rows, shows an indeterminate progress state, and reports matched versus unmatched counts. Next automatically uses the enriched rows on its next request.
 
 **Files touched:**
