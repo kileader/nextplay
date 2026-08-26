@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { getUserGames, importSteamFamilyLibrary } from '../api/userGames';
@@ -7,7 +7,7 @@ import type { SteamFamilyImportResult, UserGamePage, UserGameSort } from '../typ
 import './MyGamesPage.css';
 
 const PAGE_LIMIT = 50;
-const IMPORT_TIMEOUT_MS = 60_000;
+type ImportPhase = 'importing' | 'refreshing' | null;
 
 function formatPlaytime(minutes: number): string {
   if (minutes < 60) return `${minutes}m`;
@@ -34,9 +34,11 @@ export default function MyGamesPage() {
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [importing, setImporting] = useState(false);
+  const [importPhase, setImportPhase] = useState<ImportPhase>(null);
+  const [importElapsedSeconds, setImportElapsedSeconds] = useState(0);
   const [importResult, setImportResult] = useState<SteamFamilyImportResult | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
+  const importControllerRef = useRef<AbortController | null>(null);
 
   const request = useMemo(() => ({
     playable: true,
@@ -54,13 +56,23 @@ export default function MyGamesPage() {
     if (!token) return;
     const controller = new AbortController();
     void getUserGames(request, token, controller.signal)
-      .then(setData)
+      .then(result => {
+        setData(result);
+        setImportPhase(current => current === 'refreshing' ? null : current);
+      })
       .catch(error => {
         if (controller.signal.aborted) return;
         setError(error instanceof ApiError ? error.message : 'Failed to load your games.');
+        setImportPhase(current => current === 'refreshing' ? null : current);
       });
     return () => controller.abort();
   }, [token, request, refreshNonce]);
+
+  useEffect(() => {
+    if (importPhase !== 'importing') return;
+    const interval = window.setInterval(() => setImportElapsedSeconds(seconds => seconds + 1), 1_000);
+    return () => window.clearInterval(interval);
+  }, [importPhase]);
 
   const loading = data === null && error === null;
 
@@ -83,24 +95,30 @@ export default function MyGamesPage() {
   async function handleImport(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file || !token) return;
-    setImporting(true);
+    setImportPhase('importing');
+    setImportElapsedSeconds(0);
     setError(null);
     setImportResult(null);
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), IMPORT_TIMEOUT_MS);
+    importControllerRef.current = controller;
     try {
       const result = await importSteamFamilyLibrary(file, token, controller.signal);
       setImportResult(result);
       resetForNewQuery();
+      setImportPhase('refreshing');
       setRefreshNonce(current => current + 1);
     } catch (error) {
       setError(controller.signal.aborted
-        ? 'The import timed out. Please try again; if it keeps happening, check the Railway deployment logs.'
+        ? 'Import cancelled. Refresh your library to see whether the server completed it before cancellation.'
         : error instanceof ApiError ? error.message : 'Failed to import the Steam Family CSV.');
+      setImportPhase(null);
     } finally {
-      window.clearTimeout(timeout);
-      setImporting(false);
+      importControllerRef.current = null;
     }
+  }
+
+  function cancelImport() {
+    importControllerRef.current?.abort();
   }
 
   if (!isLoggedIn) {
@@ -119,6 +137,8 @@ export default function MyGamesPage() {
   const showCovers = data?.results.some(game => game.coverImageUrl !== null) ?? false;
   const showGenres = data?.results.some(game => game.genreIds.length > 0) ?? false;
   const showRatings = data?.results.some(game => game.igdbRating !== null) ?? false;
+  const importActive = importPhase !== null;
+  const importTakingLong = importPhase === 'importing' && importElapsedSeconds >= 60;
 
   return (
     <div className="my-games-page">
@@ -135,14 +155,27 @@ export default function MyGamesPage() {
           <span>Import a new export or refresh an existing library.</span>
         </div>
         <form className="library-import" onSubmit={handleImport}>
-          <input id="steam-family-csv" className="library-file-input" type="file" accept=".csv,text/csv" onChange={event => setFile(event.target.files?.[0] ?? null)} />
+          <input id="steam-family-csv" className="library-file-input" type="file" accept=".csv,text/csv" disabled={importActive} onChange={event => setFile(event.target.files?.[0] ?? null)} />
           <label className="library-file-button" htmlFor="steam-family-csv">
             Choose CSV
           </label>
           <span className="library-file-name">{file?.name ?? 'No file selected'}</span>
-          <button type="submit" disabled={!file || importing}>{importing ? 'Importing...' : 'Import CSV'}</button>
+          <button type="submit" disabled={!file || importActive}>{importActive ? 'Working...' : 'Import CSV'}</button>
         </form>
       </section>
+
+      {importPhase && (
+        <section className="library-import-progress" aria-live="polite" role="status">
+          <div>
+            <strong>{importPhase === 'importing' ? 'Importing Steam Family library' : 'Refreshing your library'}</strong>
+            <span>{importPhase === 'importing'
+              ? importTakingLong ? 'Still importing. Keep this page open while the library is matched.' : 'Uploading the CSV and matching game metadata.'
+              : 'Loading the imported games into this view.'}</span>
+          </div>
+          <div className="library-progress-track" aria-hidden="true"><span /></div>
+          {importPhase === 'importing' && <button className="library-import-cancel" type="button" onClick={cancelImport}>Cancel</button>}
+        </section>
+      )}
 
       {importResult && (
         <p className="import-result" role="status">

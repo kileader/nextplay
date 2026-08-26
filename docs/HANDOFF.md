@@ -2,6 +2,19 @@
 
 ## Latest snapshot (2026-08-26)
 
+**Import progress revised:** CSV imports no longer abort automatically after 60 seconds, because Railway may be slow while still processing a valid library. The UI now has an indeterminate import bar, a clear refresh stage until the updated library query resolves, a “still importing” message after one minute, and an explicit Cancel control. A cancelled request tells the user to refresh in case the server completed before cancellation.
+
+**Files touched:**
+- `frontend/src/pages/MyGamesPage.tsx`, `MyGamesPage.css` — visible two-stage import lifecycle, long-import messaging, and explicit cancellation.
+
+**Verification:** `frontend` production build green (`tsc -b && vite build`).
+
+**Next sensible step:** Commit and deploy this correction, then let one import finish without closing the page. If it does not complete, inspect the Railway request logs rather than adding another client timeout.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **My Games metadata fallback refined:** The library table now hides cover, genre, and rating columns when the current result page has no cache enrichment, leaving a dense Steam-facts table rather than empty placeholders and colliding headers. The genre filter also hides when no matched metadata supplies genres. Import feedback now reports whether any rows matched cached metadata, making sparse matching observable on the next import.
 
 **Files touched:**
