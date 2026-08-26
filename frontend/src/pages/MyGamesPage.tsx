@@ -179,7 +179,7 @@ export default function MyGamesPage() {
 
       {importResult && (
         <p className="import-result" role="status">
-          Imported {importResult.totalRows} games: {importResult.created} new, {importResult.updated} updated.{' '}
+          Imported {importResult.totalRows} games: {importResult.created} new, {importResult.updated} updated, {importResult.removed} removed.{' '}
           {importResult.cacheMatched > 0
             ? `${importResult.cacheMatched} matched to cached game metadata.`
             : 'No games matched to cached metadata yet.'}

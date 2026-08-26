@@ -187,6 +187,7 @@ export type SteamFamilyImportResult = {
   totalRows: number;
   created: number;
   updated: number;
+  removed: number;
   cacheMatched: number;
   cacheUnmatched: number;
   cacheAmbiguous: number;

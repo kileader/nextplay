@@ -2,6 +2,22 @@
 
 ## Latest snapshot (2026-08-26)
 
+**Steam-library re-imports now replace the prior snapshot:** After full CSV validation, the importer updates or creates rows present in the export and deletes only the authenticated user's rows that are absent. The import result and My Games feedback report the removed count. This makes the small `local-data/library-test.csv` fixture a useful replacement-library test.
+
+**Files touched:**
+- `backend/src/main/java/com/kevinleader/bgr/service/SteamFamilyLibraryImportService.java`, `dto/usergame/SteamFamilyImportResultDto.java` — per-user snapshot reconciliation and removed count.
+- `backend/src/test/java/com/kevinleader/bgr/service/SteamFamilyLibraryImportServiceTest.java`, `UserGameControllerTest.java` — result contract and stale-row removal coverage.
+- `frontend/src/types/index.ts`, `frontend/src/pages/MyGamesPage.tsx` — display the removed count.
+- `docs/DECISIONS.md`, `docs/HANDOFF.md` — updated import semantics.
+
+**Verification:** `backend/mvnw.cmd test` green (73 tests). `frontend` production build green (`tsc -b && vite build`).
+
+**Next sensible step:** Import `local-data/library-test.csv`; My Games should show four playable games. Re-import the full `local-data/library.csv` afterward to restore the full library.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **Import progress revised:** CSV imports no longer abort automatically after 60 seconds, because Railway may be slow while still processing a valid library. The UI now has an indeterminate import bar, a clear refresh stage until the updated library query resolves, a “still importing” message after one minute, and an explicit Cancel control. A cancelled request tells the user to refresh in case the server completed before cancellation.
 
 **Files touched:**

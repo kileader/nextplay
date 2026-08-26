@@ -51,8 +51,12 @@ public class SteamFamilyLibraryImportService {
     @Transactional
     public SteamFamilyImportResultDto importCsv(AppUser user, MultipartFile file) {
         List<SteamFamilyRow> rows = parse(file);
-        Map<Integer, UserGame> existingByAppId = userGameRepository.findByUser(user).stream()
+        List<UserGame> existingGames = userGameRepository.findByUser(user);
+        Map<Integer, UserGame> existingByAppId = existingGames.stream()
                 .collect(Collectors.toMap(UserGame::getSteamAppId, game -> game));
+        Set<Integer> importedAppIds = rows.stream()
+                .map(SteamFamilyRow::steamAppId)
+                .collect(Collectors.toSet());
         Map<Integer, List<GameCache>> cacheByAppId = gameCacheRepository.findBySteamAppIdIn(
                         rows.stream().map(SteamFamilyRow::steamAppId).collect(Collectors.toSet())
                 ).stream()
@@ -101,8 +105,12 @@ public class SteamFamilyLibraryImportService {
         }
 
         userGameRepository.saveAll(games);
+        List<UserGame> removedGames = existingGames.stream()
+                .filter(game -> !importedAppIds.contains(game.getSteamAppId()))
+                .toList();
+        userGameRepository.deleteAll(removedGames);
         return new SteamFamilyImportResultDto(
-                rows.size(), created, updated, cacheMatched, cacheUnmatched, cacheAmbiguous
+                rows.size(), created, updated, removedGames.size(), cacheMatched, cacheUnmatched, cacheAmbiguous
         );
     }
 

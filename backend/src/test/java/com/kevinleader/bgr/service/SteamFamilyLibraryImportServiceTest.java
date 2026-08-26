@@ -51,7 +51,7 @@ class SteamFamilyLibraryImportServiceTest {
                 20,"New, Game",family,false,excluded by owner,0,2023-05-06,,https://store.steampowered.com/app/20
                 """));
 
-        assertThat(result).isEqualTo(new SteamFamilyImportResultDto(2, 1, 1, 1, 0, 1));
+        assertThat(result).isEqualTo(new SteamFamilyImportResultDto(2, 1, 1, 0, 1, 0, 1));
         assertThat(existing.getGameCache()).isSameAs(singleMatch);
         assertThat(existing.getPlaytimeMinutes()).isEqualTo(120);
         assertThat(existing.getLastPlayedAt()).isEqualTo(LocalDate.of(2024, 2, 3));
@@ -65,6 +65,27 @@ class SteamFamilyLibraryImportServiceTest {
         assertThat(created.getGameCache()).isNull();
         assertThat(created.isPlayable()).isFalse();
         assertThat(created.getExcludeReason()).isEqualTo("excluded by owner");
+    }
+
+    @Test
+    void removesGamesAbsentFromTheImportedLibrarySnapshot() {
+        AppUser user = user();
+        UserGame retained = new UserGame();
+        retained.setUser(user);
+        retained.setSteamAppId(10);
+        UserGame removed = new UserGame();
+        removed.setUser(user);
+        removed.setSteamAppId(20);
+        when(userGameRepository.findByUser(user)).thenReturn(List.of(retained, removed));
+        when(gameCacheRepository.findBySteamAppIdIn(any())).thenReturn(List.of());
+
+        SteamFamilyImportResultDto result = service.importCsv(user, csv("""
+                appid,name,source,playable,exclude_reason,playtime_minutes,acquired,last_played
+                10,Retained Game,own,true,,0,2024-01-01,
+                """));
+
+        assertThat(result.removed()).isEqualTo(1);
+        verify(userGameRepository).deleteAll(List.of(removed));
     }
 
     @Test

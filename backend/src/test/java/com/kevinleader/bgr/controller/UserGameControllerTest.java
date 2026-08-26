@@ -28,7 +28,7 @@ class UserGameControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "library.csv", "text/csv", "appid,name".getBytes(StandardCharsets.UTF_8)
         );
-        SteamFamilyImportResultDto expected = new SteamFamilyImportResultDto(1, 1, 0, 0, 1, 0);
+        SteamFamilyImportResultDto expected = new SteamFamilyImportResultDto(1, 1, 0, 0, 0, 1, 0);
         when(service.importCsv(user, file)).thenReturn(expected);
 
         SteamFamilyImportResultDto result = controller.importSteamFamily(principal, file);
