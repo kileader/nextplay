@@ -74,6 +74,7 @@ public class IgdbSyncService {
     private void applyIgdbFields(GameCache entity, IgdbGameDto dto) {
         entity.setIgdbGameId(dto.id());
         entity.setTitle(dto.name());
+        entity.setIgdbSummary(dto.summary());
         entity.setIgdbRating(dto.rating() != null ? BigDecimal.valueOf(dto.rating()) : null);
         entity.setIgdbRatingCount(dto.ratingCount() != null ? dto.ratingCount() : 0);
         entity.setPlatformIds(dto.platforms() != null

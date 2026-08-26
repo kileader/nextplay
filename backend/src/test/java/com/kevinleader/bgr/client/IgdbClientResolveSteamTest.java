@@ -27,6 +27,7 @@ class IgdbClientResolveSteamTest {
                 null,
                 null,
                 null,
+                null,
                 new IgdbExternalIdsDto(N.numberNode(111)),
                 List.of(new IgdbExternalGameDto(1, "222")),
                 null
@@ -48,6 +49,7 @@ class IgdbClientResolveSteamTest {
                 null,
                 null,
                 null,
+                null,
                 List.of(new IgdbExternalGameDto(1, "222")),
                 null
         );
@@ -59,6 +61,7 @@ class IgdbClientResolveSteamTest {
         IgdbGameDto dto = new IgdbGameDto(
                 1L,
                 "n",
+                null,
                 null,
                 null,
                 null,

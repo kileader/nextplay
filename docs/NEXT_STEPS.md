@@ -2,11 +2,11 @@
 
 ## Start here (NextPlay, 2026-08-26)
 
-1. **Use My Games with the real Steam Family CSV** — deploy the browse API and `/my-games`, import `local-data/library.csv`, then assess cache-match coverage and table usability with the full library.
-2. **Exercise personal statuses** — mark a small set of games as backlog/playing/completed/dropped and assess whether the My Games filter and inline control are sufficient before adding more workflow.
-3. **Wishlist Watchtower (v1)** — `wishlist_entry` + `WishlistEntry` exist but remain unwired; revisit now that personal status semantics exist.
-4. **Game detail page** (`/game/:id`) — pairs with personal library/wishlist.
-5. **Value Rankings maintenance** — retain the existing ranking feature, but keep product and pricing trust scope focused on reliable tracked PC prices; do not expand console price estimation.
+1. **Exercise Next with the real library** — deploy V13/V14 plus `/next`, run an IGDB sync to populate descriptions, re-import `local-data/library.csv`, then judge whether the three picks and their stated reasons feel useful.
+2. **Improve metadata coverage for My Games** — cache matching is currently sparse for the Steam Family export; investigate targeted metadata enrichment before treating the visual Next experience as complete.
+3. **Generalize My Games for manual console entries** — evolve Steam-specific identity carefully so a user can add individual non-Steam games.
+4. **Taste profile and mood/genre matching** — add simple editable preferences only after the time/energy picker has been exercised; AI remains optional and later.
+5. **Wishlist Watchtower (v1)** — `wishlist_entry` + `WishlistEntry` exist but remain unwired; revisit after the personal-library model supports manual entries.
 
 ## Active queue (maintenance)
 

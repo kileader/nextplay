@@ -196,3 +196,25 @@ export type SteamFamilyImportResult = {
   cacheUnmatched: number;
   cacheAmbiguous: number;
 };
+
+// --- Next ---
+
+export type NextPlaySessionLength = 'SHORT' | 'STANDARD' | 'OPEN_ENDED';
+export type NextPlayEnergy = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export type NextPlayPick = {
+  steamAppId: number;
+  title: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  igdbRating: number | null;
+  hltbHours: number | null;
+  playtimeMinutes: number;
+  status: UserGameStatus | null;
+  reasons: string[];
+};
+
+export type NextPlayRequest = {
+  sessionLength: NextPlaySessionLength;
+  energy: NextPlayEnergy;
+};

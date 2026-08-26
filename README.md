@@ -8,12 +8,12 @@ The original Budget Game Rankings app remains here as **Value Rankings**: a sepa
 
 ## Product Direction
 
-- **My Games** - owned and family-shared games, playtime, and eventually personal statuses.
-- **NextPlay** - future decision support for choosing from the accessible library.
+- **My Games** - owned and family-shared games, playtime, and lightweight personal statuses.
+- **Next** - decision support for choosing from the accessible library.
 - **Value Rankings** - the existing public rating/playtime/price ranking feature.
 - **Wishlist** - games the user may want to buy.
 
-Only the existing Steam Family import and Value Rankings functionality are implemented today. Recommendations, alerts, and status management are intentionally not part of this rename.
+The first Next prototype provides a small, transparent shortlist based on the accessible library, play history, saved status, cached rating, and time/energy commitment choices. Recommendations, alerts, taste profiles, and richer mood matching remain early-stage work.
 
 ---
 
@@ -69,6 +69,8 @@ value_score = (igdb_rating × resolved_hours) / price_in_dollars
 - User accounts - signup, login, JWT auth
 - Saved Value Rankings configurations
 - Steam Family CSV import backend for a personal library
+- My Games status filters and per-game status controls
+- Next page with time-neutral, transparent game picks
 - Admin panel - user management, manual cache refresh, sync status
 
 ---

@@ -26,7 +26,7 @@ public class IgdbClient {
     // Apicalypse clauses -- each segment must not include a trailing semicolon;
     // fetchGames() assembles the final query and adds semicolons between clauses.
     private static final String FIELDS =
-            "fields id,name,rating,rating_count,platforms,genres," +
+            "fields id,name,summary,rating,rating_count,platforms,genres," +
             "first_release_date,cover.image_id,url,game_modes," +
             "external.steam," +
             "external_games.uid,external_games.category," +

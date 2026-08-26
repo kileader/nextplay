@@ -2,6 +2,27 @@
 
 ## Latest snapshot (2026-08-26)
 
+**Next v1 added:** Authenticated users can open `/next`, select a time-neutral session length and energy level, and receive three visual game picks with plainly stated reasons. The server evaluates the complete playable library, excludes Completed/Dropped, prioritizes unplayed and currently Playing games, then applies cached IGDB rating and HLTB commitment heuristics. The first picker intentionally does not claim genre, mood, or AI reasoning yet. Navigation now exposes Next as the primary signed-in experience.
+
+**IGDB descriptions introduced:** V14 adds `game_cache.igdb_summary`; the IGDB cache sync requests and stores `summary`, and Next displays it when a user-game cache match exists. The page retains a clear fallback for unavailable metadata.
+
+**Files touched:**
+- `backend/src/main/resources/db/migration/V14__add_igdb_summary.sql`, `entity/GameCache.java`, `dto/igdb/IgdbGameDto.java`, `client/IgdbClient.java`, `service/IgdbSyncService.java` — cached description support.
+- `backend/src/main/java/com/kevinleader/bgr/dto/nextplay/`, `controller/NextPlayController.java`, `service/NextPlayPickService.java` — picker request/response contract and deterministic shortlist logic.
+- `backend/src/test/java/com/kevinleader/bgr/client/IgdbClientResolveSteamTest.java`, `service/NextPlayPickServiceTest.java` — IGDB DTO compatibility and picker behavior coverage.
+- `frontend/src/pages/NextPage.*`, `api/nextPlay.ts`, `types/index.ts`, `main.tsx`, `components/Nav.tsx` — Next questionnaire and visual picks interface.
+- `README.md`, `docs/DECISIONS.md`, `docs/NEXT_STEPS.md`, `docs/HANDOFF.md` — current behavior and priorities.
+
+**Verification:** `backend/mvnw.cmd test` green (77 tests). `frontend` production build green (`tsc -b && vite build`).
+
+**Open risks:** The actual Steam Family library currently has sparse `GameCache` matches, so many picks may lack cover art and descriptions until cache coverage is improved. V14 descriptions only populate after an IGDB sync; re-import the CSV afterward to link any now-matched rows.
+
+**Next sensible step:** Deploy backend and frontend together, run the IGDB sync, re-import the real CSV, then use Next repeatedly with different selections and capture which picks/reasons feel wrong.
+
+---
+
+## Latest snapshot (2026-08-26)
+
 **Personal statuses added to My Games:** `UserGame` now has an optional user-managed status: Backlog, Playing, Completed, or Dropped. Existing and imported games begin uncategorized; Steam playtime remains a separate fact and re-imports preserve a status for a game still in the CSV. My Games has a status filter, including Not categorized, and a compact per-game selector. `PATCH /users/me/games/{steamAppId}/status` updates only the authenticated user's matching library row.
 
 **Files touched:**

@@ -7,6 +7,7 @@ import java.util.List;
 public record IgdbGameDto(
         Long id,
         String name,
+        String summary,
         Double rating,
         @JsonProperty("rating_count") Integer ratingCount,
         List<Integer> platforms,

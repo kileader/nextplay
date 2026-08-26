@@ -10,6 +10,7 @@ import RankingsPage from './pages/RankingsPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import SignupPage from './pages/SignupPage.tsx'
 import MyGamesPage from './pages/MyGamesPage.tsx'
+import NextPage from './pages/NextPage.tsx'
 import './index.css'
 
 const rootEl = document.getElementById('root');
@@ -26,6 +27,7 @@ createRoot(rootEl).render(
                 <Route index element={<RankingsPage />} />
                 <Route path="login" element={<LoginPage />} />
                 <Route path="signup" element={<SignupPage />} />
+                <Route path="next" element={<NextPage />} />
                 <Route path="my-games" element={<MyGamesPage />} />
               </Route>
             </Routes>

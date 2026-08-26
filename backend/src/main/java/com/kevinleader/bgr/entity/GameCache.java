@@ -21,6 +21,9 @@ public class GameCache {
     @Column(nullable = false)
     private String title;
 
+    @Column(name = "igdb_summary")
+    private String igdbSummary;
+
     @Column(name = "igdb_rating", precision = 5, scale = 2)
     private BigDecimal igdbRating;
 
