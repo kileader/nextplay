@@ -19,8 +19,8 @@ class IgdbClientExtractSteamTest {
     @Test
     void firstMatchingSteamRowWinsWhenMultiplePresent() {
         List<IgdbExternalGameDto> games = List.of(
-                new IgdbExternalGameDto(STEAM_CATEGORY, "2379780"),
-                new IgdbExternalGameDto(STEAM_CATEGORY, "999999")
+                new IgdbExternalGameDto(STEAM_CATEGORY, "2379780", null),
+                new IgdbExternalGameDto(STEAM_CATEGORY, "999999", null)
         );
         assertThat(IgdbClient.extractSteamAppId(games)).isEqualTo(2379780);
     }
@@ -28,8 +28,8 @@ class IgdbClientExtractSteamTest {
     @Test
     void ignoresNonSteamCategories() {
         List<IgdbExternalGameDto> games = List.of(
-                new IgdbExternalGameDto(14, "111"),
-                new IgdbExternalGameDto(STEAM_CATEGORY, "42")
+                new IgdbExternalGameDto(14, "111", null),
+                new IgdbExternalGameDto(STEAM_CATEGORY, "42", null)
         );
         assertThat(IgdbClient.extractSteamAppId(games)).isEqualTo(42);
     }

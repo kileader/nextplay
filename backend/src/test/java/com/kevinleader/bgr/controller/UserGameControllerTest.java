@@ -7,6 +7,7 @@ import com.kevinleader.bgr.entity.AppUser;
 import com.kevinleader.bgr.entity.UserGameStatus;
 import com.kevinleader.bgr.security.AppUserPrincipal;
 import com.kevinleader.bgr.service.SteamFamilyLibraryImportService;
+import com.kevinleader.bgr.service.SteamLibraryMetadataEnrichmentService;
 import com.kevinleader.bgr.service.UserGameService;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
@@ -23,7 +24,7 @@ class UserGameControllerTest {
     @Test
     void importsCsvForAuthenticatedUser() {
         SteamFamilyLibraryImportService service = mock(SteamFamilyLibraryImportService.class);
-        UserGameController controller = new UserGameController(service, mock(UserGameService.class));
+        UserGameController controller = new UserGameController(service, mock(SteamLibraryMetadataEnrichmentService.class), mock(UserGameService.class));
         AppUser user = new AppUser();
         user.setUsername("kevin");
         AppUserPrincipal principal = new AppUserPrincipal(user);
@@ -42,7 +43,7 @@ class UserGameControllerTest {
     @Test
     void updatesStatusForAuthenticatedUser() {
         UserGameService service = mock(UserGameService.class);
-        UserGameController controller = new UserGameController(mock(SteamFamilyLibraryImportService.class), service);
+        UserGameController controller = new UserGameController(mock(SteamFamilyLibraryImportService.class), mock(SteamLibraryMetadataEnrichmentService.class), service);
         AppUser user = new AppUser();
         AppUserPrincipal principal = new AppUserPrincipal(user);
         UserGameStatusUpdateRequestDto request = new UserGameStatusUpdateRequestDto(UserGameStatus.PLAYING);

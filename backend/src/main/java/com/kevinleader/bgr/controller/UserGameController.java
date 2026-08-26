@@ -1,6 +1,7 @@
 package com.kevinleader.bgr.controller;
 
 import com.kevinleader.bgr.dto.usergame.SteamFamilyImportResultDto;
+import com.kevinleader.bgr.dto.usergame.SteamLibraryEnrichmentResultDto;
 import com.kevinleader.bgr.dto.ranking.SortDirection;
 import com.kevinleader.bgr.dto.usergame.UserGamePageDto;
 import com.kevinleader.bgr.dto.usergame.UserGameQueryDto;
@@ -10,6 +11,7 @@ import com.kevinleader.bgr.dto.usergame.UserGameStatusUpdateRequestDto;
 import com.kevinleader.bgr.entity.UserGameStatus;
 import com.kevinleader.bgr.security.AppUserPrincipal;
 import com.kevinleader.bgr.service.SteamFamilyLibraryImportService;
+import com.kevinleader.bgr.service.SteamLibraryMetadataEnrichmentService;
 import com.kevinleader.bgr.service.UserGameService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -34,12 +36,20 @@ import java.util.List;
 public class UserGameController {
 
     private final SteamFamilyLibraryImportService steamFamilyLibraryImportService;
+    private final SteamLibraryMetadataEnrichmentService steamLibraryMetadataEnrichmentService;
     private final UserGameService userGameService;
 
     public UserGameController(SteamFamilyLibraryImportService steamFamilyLibraryImportService,
+                              SteamLibraryMetadataEnrichmentService steamLibraryMetadataEnrichmentService,
                               UserGameService userGameService) {
         this.steamFamilyLibraryImportService = steamFamilyLibraryImportService;
+        this.steamLibraryMetadataEnrichmentService = steamLibraryMetadataEnrichmentService;
         this.userGameService = userGameService;
+    }
+
+    @PostMapping("/enrich-steam-metadata")
+    public SteamLibraryEnrichmentResultDto enrichSteamMetadata(@AuthenticationPrincipal AppUserPrincipal principal) {
+        return steamLibraryMetadataEnrichmentService.enrich(principal.getUser());
     }
 
     @GetMapping

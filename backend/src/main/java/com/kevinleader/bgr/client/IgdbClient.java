@@ -14,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
+import java.util.Collection;
 
 @Component
 public class IgdbClient {
@@ -92,6 +93,35 @@ public class IgdbClient {
                 .body(query)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
+    }
+
+    /** Resolves a bounded set of Steam AppIDs without the broad catalog rating filter. */
+    public List<IgdbGameDto> fetchGamesBySteamAppIds(Collection<Integer> steamAppIds) {
+        if (steamAppIds == null || steamAppIds.isEmpty()) return List.of();
+        String token = getAccessToken();
+        String ids = steamAppIds.stream().map(String::valueOf).map(id -> "\"" + id + "\"")
+                .collect(java.util.stream.Collectors.joining(","));
+        List<IgdbExternalGameDto> externalGames = igdbRestClient.post()
+                .uri("/external_games")
+                .header("Client-ID", clientId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body("fields game; where category = 1 & uid = (" + ids + ");")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+        if (externalGames == null || externalGames.isEmpty()) return List.of();
+        String gameIds = externalGames.stream().map(IgdbExternalGameDto::game).filter(java.util.Objects::nonNull)
+                .map(String::valueOf).distinct().collect(java.util.stream.Collectors.joining(","));
+        if (gameIds.isEmpty()) return List.of();
+        List<IgdbGameDto> games = igdbRestClient.post()
+                .uri("/games")
+                .header("Client-ID", clientId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(FIELDS + "; where id = (" + gameIds + ");")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+        return games == null ? List.of() : games;
     }
 
     public static String buildCoverUrl(String imageId) {
