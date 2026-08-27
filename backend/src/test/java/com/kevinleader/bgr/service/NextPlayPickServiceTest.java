@@ -32,7 +32,7 @@ class NextPlayPickServiceTest {
         when(userGameRepository.findLibraryByUser(user)).thenReturn(List.of(longGame, completed, compact, dropped));
 
         var picks = service.getPicks(user, new NextPlayRequestDto(
-                NextPlaySessionLength.SHORT, NextPlayEnergy.LOW
+                NextPlaySessionLength.SHORT, NextPlayEnergy.LOW, null, null
         ));
 
         assertThat(picks).extracting(pick -> pick.title()).containsExactly("Compact", "Long");
@@ -48,7 +48,7 @@ class NextPlayPickServiceTest {
         when(userGameRepository.findLibraryByUser(user)).thenReturn(List.of(compact, longGame));
 
         var picks = service.getPicks(user, new NextPlayRequestDto(
-                NextPlaySessionLength.OPEN_ENDED, NextPlayEnergy.HIGH
+                NextPlaySessionLength.OPEN_ENDED, NextPlayEnergy.HIGH, null, null
         ));
 
         assertThat(picks).first().satisfies(pick -> {
@@ -57,12 +57,37 @@ class NextPlayPickServiceTest {
         });
     }
 
+    @Test
+    void filtersByRequestedGenreAndRotatesRefreshPool() {
+        AppUser user = new AppUser();
+        UserGame actionOne = game(1, "Action One", 0, null, 8, 90, 4);
+        UserGame actionTwo = game(2, "Action Two", 0, null, 8, 80, 4);
+        UserGame actionThree = game(3, "Action Three", 0, null, 8, 70, 4);
+        UserGame actionFour = game(4, "Action Four", 0, null, 8, 60, 4);
+        UserGame puzzle = game(5, "Puzzle", 0, null, 8, 99, 9);
+        when(userGameRepository.findLibraryByUser(user)).thenReturn(List.of(actionOne, actionTwo, actionThree, actionFour, puzzle));
+
+        var picks = service.getPicks(user, new NextPlayRequestDto(
+                NextPlaySessionLength.STANDARD, NextPlayEnergy.MEDIUM, List.of(4), 1
+        ));
+
+        assertThat(picks).extracting(pick -> pick.title())
+                .containsExactly("Action Two", "Action Three", "Action Four");
+        assertThat(picks).extracting(pick -> pick.title()).doesNotContain("Puzzle");
+    }
+
     private UserGame game(int appId, String title, int playtimeMinutes, UserGameStatus status,
                           int hltbHours, int rating) {
+        return game(appId, title, playtimeMinutes, status, hltbHours, rating, new int[0]);
+    }
+
+    private UserGame game(int appId, String title, int playtimeMinutes, UserGameStatus status,
+                          int hltbHours, int rating, int... genreIds) {
         GameCache cache = new GameCache();
         cache.setHltbHours(BigDecimal.valueOf(hltbHours));
         cache.setIgdbRating(BigDecimal.valueOf(rating));
         cache.setIgdbSummary(title + " summary");
+        cache.setGenreIds(genreIds);
         UserGame game = new UserGame();
         game.setSteamAppId(appId);
         game.setSteamTitle(title);

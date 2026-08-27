@@ -1,5 +1,21 @@
 # Handoff
 
+## Latest snapshot (2026-08-27)
+
+**Next controls are less static:** Next now supports a real genre filter sourced from the user's playable library metadata, plus **Refresh** and **Surprise me** controls. The backend accepts optional `genreIds` and `refreshKey`; picks still use the existing time/energy scoring, but filter by requested genres and rotate through a scored shortlist so refresh can surface another credible set instead of repeating the same three cards.
+
+**Files touched:**
+- `backend/src/main/java/com/kevinleader/bgr/dto/nextplay/NextPlayRequestDto.java`, `service/NextPlayPickService.java` — optional genre narrowing and refresh-pool rotation.
+- `backend/src/test/java/com/kevinleader/bgr/service/NextPlayPickServiceTest.java` — coverage for genre filtering and refresh rotation.
+- `frontend/src/pages/NextPage.tsx`, `NextPage.css`, `frontend/src/types/index.ts` — genre select, Refresh, Surprise me, request contract, and responsive control layout.
+- `docs/DECISIONS.md`, `docs/HANDOFF.md`, `docs/NEXT_STEPS.md` — record the Next interaction update.
+
+**Verification:** `backend/.\\mvnw.cmd test` green (77 tests). Frontend TypeScript build green via bundled Node (`node node_modules/typescript/bin/tsc -b`). Vite production build green via bundled Node (`node node_modules/vite/bin/vite.js build`); required outside-sandbox execution after sandboxed Vite failed with `spawn EPERM`.
+
+**Next sensible step:** Try Next against the real imported library and judge whether refresh rotation feels varied enough; if not, evolve the backend from rotation to controlled randomization or explicit "avoid already shown this session" state.
+
+---
+
 ## Latest snapshot (2026-08-26)
 
 **IGDB enrichment production fix:** IGDB rejects the obsolete `external.steam` game field, which caused `Find game details` to fail with HTTP 400 before any cache rows could be saved. The shared game query now relies on `external_games`; targeted enrichment continues to resolve through `external_game_sources` and keeps the requested Steam AppID explicitly.

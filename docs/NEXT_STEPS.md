@@ -2,7 +2,7 @@
 
 ## Start here (NextPlay, 2026-08-26)
 
-1. **Exercise Next with the real library** — deploy V13/V14 plus `/next`, run an IGDB sync to populate descriptions, re-import `local-data/library.csv`, then judge whether the three picks and their stated reasons feel useful.
+1. **Exercise Next with the real library** — deploy current `/next`, run an IGDB sync to populate descriptions/genres, re-import `local-data/library.csv`, then judge whether time/energy, genre, Refresh, and Surprise me feel useful.
 2. **Improve metadata coverage for My Games** — cache matching is currently sparse for the Steam Family export; investigate targeted metadata enrichment before treating the visual Next experience as complete.
 3. **Generalize My Games for manual console entries** — evolve Steam-specific identity carefully so a user can add individual non-Steam games.
 4. **Taste profile and mood/genre matching** — add simple editable preferences only after the time/energy picker has been exercised; AI remains optional and later.

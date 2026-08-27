@@ -223,4 +223,6 @@ export type NextPlayPick = {
 export type NextPlayRequest = {
   sessionLength: NextPlaySessionLength;
   energy: NextPlayEnergy;
+  genreIds?: number[];
+  refreshKey?: number;
 };

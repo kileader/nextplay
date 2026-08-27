@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { getNextPlayPicks } from '../api/nextPlay';
+import { getUserGames } from '../api/userGames';
 import { useAuth } from '../context/AuthContext';
-import type { NextPlayEnergy, NextPlayPick, NextPlaySessionLength } from '../types';
+import type { MetadataItem, NextPlayEnergy, NextPlayPick, NextPlaySessionLength } from '../types';
 import './NextPage.css';
 
 const SESSION_LENGTHS: Array<{ value: NextPlaySessionLength; label: string; detail: string }> = [
@@ -27,6 +28,9 @@ export default function NextPage() {
   const { token, isLoggedIn } = useAuth();
   const [sessionLength, setSessionLength] = useState<NextPlaySessionLength>('STANDARD');
   const [energy, setEnergy] = useState<NextPlayEnergy>('MEDIUM');
+  const [genreId, setGenreId] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [availableGenres, setAvailableGenres] = useState<MetadataItem[]>([]);
   const [picks, setPicks] = useState<NextPlayPick[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,14 +39,62 @@ export default function NextPage() {
     let active = true;
     setError(null);
     setPicks(null);
-    void getNextPlayPicks({ sessionLength, energy }, token)
+    void getNextPlayPicks({
+      sessionLength,
+      energy,
+      genreIds: genreId ? [Number(genreId)] : undefined,
+      refreshKey,
+    }, token)
       .then(result => { if (active) setPicks(result); })
       .catch(requestError => {
         if (!active) return;
         setError(requestError instanceof ApiError ? requestError.message : 'Could not find picks right now.');
       });
     return () => { active = false; };
-  }, [token, sessionLength, energy]);
+  }, [token, sessionLength, energy, genreId, refreshKey]);
+
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    void getUserGames({ playable: true, offset: 0, limit: 1 }, token)
+      .then(result => {
+        if (active) setAvailableGenres(result.availableGenres);
+      })
+      .catch(() => {
+        if (active) setAvailableGenres([]);
+      });
+    return () => { active = false; };
+  }, [token]);
+
+  function chooseSessionLength(value: NextPlaySessionLength) {
+    setSessionLength(value);
+    setRefreshKey(0);
+  }
+
+  function chooseEnergy(value: NextPlayEnergy) {
+    setEnergy(value);
+    setRefreshKey(0);
+  }
+
+  function chooseGenre(value: string) {
+    setGenreId(value);
+    setRefreshKey(0);
+  }
+
+  function refreshPicks() {
+    setRefreshKey(key => key + 1);
+  }
+
+  function surpriseMe() {
+    const session = SESSION_LENGTHS[Math.floor(Math.random() * SESSION_LENGTHS.length)];
+    const energyLevel = ENERGY_LEVELS[Math.floor(Math.random() * ENERGY_LEVELS.length)];
+    const genreChoices = ['', ...availableGenres.map(genre => String(genre.id))];
+    const genre = genreChoices[Math.floor(Math.random() * genreChoices.length)] ?? '';
+    setSessionLength(session.value);
+    setEnergy(energyLevel.value);
+    setGenreId(genre);
+    setRefreshKey(key => key + 1);
+  }
 
   if (!isLoggedIn) {
     return (
@@ -70,7 +122,7 @@ export default function NextPage() {
                 type="button"
                 className={sessionLength === option.value ? 'next-choice is-selected' : 'next-choice'}
                 aria-pressed={sessionLength === option.value}
-                onClick={() => setSessionLength(option.value)}
+                onClick={() => chooseSessionLength(option.value)}
               >
                 <span>{option.label}</span>
                 <small>{option.detail}</small>
@@ -87,7 +139,7 @@ export default function NextPage() {
                 type="button"
                 className={energy === option.value ? 'next-choice is-selected' : 'next-choice'}
                 aria-pressed={energy === option.value}
-                onClick={() => setEnergy(option.value)}
+                onClick={() => chooseEnergy(option.value)}
               >
                 <span>{option.label}</span>
                 <small>{option.detail}</small>
@@ -95,6 +147,20 @@ export default function NextPage() {
             ))}
           </div>
         </fieldset>
+      </section>
+
+      <section className="next-tools" aria-label="Fine tune picks">
+        <label>
+          <span>Genre</span>
+          <select value={genreId} onChange={event => chooseGenre(event.target.value)}>
+            <option value="">Anything in my library</option>
+            {availableGenres.map(genre => <option key={genre.id} value={genre.id}>{genre.name}</option>)}
+          </select>
+        </label>
+        <div className="next-tool-actions">
+          <button type="button" onClick={refreshPicks}>Refresh</button>
+          <button type="button" className="next-secondary-action" onClick={surpriseMe}>Surprise me</button>
+        </div>
       </section>
 
       <section className="next-results" aria-live="polite">

@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-08-27
+
+- **Next interaction v1.1:** Keep Next recommendations grounded in explicit data. Genre selection filters by cached IGDB genre IDs already present in the user's playable library; Refresh rotates a scored shortlist with a request `refreshKey`; Surprise me randomizes the existing controls client-side. Do not claim mood or AI taste matching until the picker has corresponding backend inputs and reasoning.
+
 ## 2026-08-26
 
 - **NextPlay product framing:** Rename the product from Budget Game Rankings to **NextPlay**. Keep the existing ranking implementation as **Value Rankings**, a feature within the broader personal-library product. Preserve API routes, database schema/history, Java packages, and existing browser-storage keys during this first-stage rename.

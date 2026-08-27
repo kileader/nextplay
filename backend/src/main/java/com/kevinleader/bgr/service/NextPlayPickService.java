@@ -12,13 +12,18 @@ import com.kevinleader.bgr.repository.UserGameRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class NextPlayPickService {
 
     private static final int PICK_LIMIT = 3;
+    private static final int REFRESH_POOL_LIMIT = 12;
 
     private final UserGameRepository userGameRepository;
 
@@ -30,16 +35,50 @@ public class NextPlayPickService {
         NextPlaySessionLength sessionLength = request.sessionLength() == null
                 ? NextPlaySessionLength.STANDARD : request.sessionLength();
         NextPlayEnergy energy = request.energy() == null ? NextPlayEnergy.MEDIUM : request.energy();
+        Set<Integer> genreIds = request.genreIds() == null ? Set.of() : request.genreIds().stream()
+                .filter(id -> id != null && id > 0)
+                .collect(Collectors.toSet());
 
-        return userGameRepository.findLibraryByUser(user).stream()
+        List<ScoredGame> candidates = userGameRepository.findLibraryByUser(user).stream()
                 .filter(UserGame::isPlayable)
                 .filter(game -> game.getStatus() != UserGameStatus.COMPLETED && game.getStatus() != UserGameStatus.DROPPED)
+                .filter(game -> matchesGenres(game, genreIds))
                 .map(game -> new ScoredGame(game, score(game, sessionLength, energy)))
                 .sorted(Comparator.comparingInt(ScoredGame::score).reversed()
                         .thenComparing(scored -> scored.game().getSteamTitle(), String.CASE_INSENSITIVE_ORDER))
+                .limit(REFRESH_POOL_LIMIT)
+                .toList();
+
+        return rotate(candidates, request.refreshKey()).stream()
                 .limit(PICK_LIMIT)
                 .map(scored -> toPick(scored.game(), sessionLength, energy))
                 .toList();
+    }
+
+    private boolean matchesGenres(UserGame game, Set<Integer> requestedGenreIds) {
+        if (requestedGenreIds.isEmpty()) {
+            return true;
+        }
+        GameCache cache = game.getGameCache();
+        int[] gameGenreIds = cache == null ? null : cache.getGenreIds();
+        if (gameGenreIds == null || gameGenreIds.length == 0) {
+            return false;
+        }
+        for (int gameGenreId : gameGenreIds) {
+            if (requestedGenreIds.contains(gameGenreId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<ScoredGame> rotate(List<ScoredGame> candidates, Integer refreshKey) {
+        if (candidates.size() <= PICK_LIMIT || refreshKey == null || refreshKey == 0) {
+            return candidates;
+        }
+        ArrayList<ScoredGame> rotated = new ArrayList<>(candidates);
+        Collections.rotate(rotated, -Math.floorMod(refreshKey, candidates.size()));
+        return rotated;
     }
 
     private int score(UserGame game, NextPlaySessionLength sessionLength, NextPlayEnergy energy) {

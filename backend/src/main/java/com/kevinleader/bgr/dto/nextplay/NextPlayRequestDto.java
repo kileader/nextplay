@@ -1,7 +1,11 @@
 package com.kevinleader.bgr.dto.nextplay;
 
+import java.util.List;
+
 public record NextPlayRequestDto(
         NextPlaySessionLength sessionLength,
-        NextPlayEnergy energy
+        NextPlayEnergy energy,
+        List<Integer> genreIds,
+        Integer refreshKey
 ) {
 }

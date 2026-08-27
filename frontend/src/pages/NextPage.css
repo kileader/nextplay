@@ -23,8 +23,8 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 28px;
-  padding: 22px 0 28px;
-  border-block: 1px solid var(--border);
+  padding: 22px 0 24px;
+  border-top: 1px solid var(--border);
 }
 
 .next-prompts fieldset {
@@ -82,6 +82,63 @@
 
 .next-choice.is-selected {
   background: var(--accent-bg);
+}
+
+.next-tools {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.next-tools label {
+  display: grid;
+  gap: 6px;
+  min-width: min(360px, 100%);
+  color: var(--text-h);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.next-tools select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+}
+
+.next-tool-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.next-tool-actions button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.next-tool-actions .next-secondary-action {
+  border-color: var(--border);
+  background: transparent;
+}
+
+.next-tool-actions button:hover,
+.next-tools select:hover {
+  border-color: var(--accent);
 }
 
 .next-results {
@@ -240,5 +297,15 @@
   .next-prompts,
   .next-pick-grid {
     grid-template-columns: 1fr;
+  }
+
+  .next-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .next-tool-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
